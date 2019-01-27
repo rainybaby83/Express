@@ -20,7 +20,8 @@ android {
 }
 
 dependencies {
-    implementation  fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
     implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'org.apache.commons:commons-lang3:3.8.1'
 }

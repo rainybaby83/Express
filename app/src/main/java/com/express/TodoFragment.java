@@ -15,6 +15,8 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -84,7 +86,7 @@ public class TodoFragment extends ListFragment {
                     null, "date desc"); // 获取手机内部短信
 
             if (cur.moveToFirst()) {
-                int index_Address = cur.getColumnIndex("address");
+//                int index_Address = cur.getColumnIndex("address");
                 int index_Body = cur.getColumnIndex("body");
                 int index_Date = cur.getColumnIndex("date");
 
@@ -92,16 +94,23 @@ public class TodoFragment extends ListFragment {
                 do {
                     String strbody = cur.getString(index_Body);
                     long longDate = cur.getLong(index_Date);
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+                    Date d = new Date(longDate);
+                    String strDate = dateFormat.format(d);
+                    StringBuilder tmpStr = new StringBuilder();
 
-                    if (strbody.contains("快递超市") || strbody.contains("验证码")) {
-                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                        Date d = new Date(longDate);
-                        String strDate = dateFormat.format(d);
-
-                        smsBuilder.append("[ ");
-                        smsBuilder.append(strbody + ", ");
-                        smsBuilder.append(strDate + ", ");
-                        smsBuilder.append(" ]\n\n");
+                    if (strbody.contains("馒头房")) {
+                        String expressCode = StringUtils.substringBetween(strbody, "提货码", "来取");
+                        tmpStr.append(strDate).append("：馒头房：").append(expressCode);
+                        smsBuilder.append(tmpStr).append(" \n\n");
+                    } else if (strbody.contains("丰巢")) {
+                        String expressCode = StringUtils.substringBetween(strbody, "请凭取件码『", "』前往明珠西苑");
+                        tmpStr.append(strDate).append("：丰巢：").append(expressCode);
+                        smsBuilder.append(tmpStr).append(" \n\n");
+                    } else if (strbody.contains("日日顺")) {
+                        String expressCode = StringUtils.substringBetween(strbody, "凭取件码", "到明珠西苑");
+                        tmpStr.append(strDate).append("：丰巢：").append(expressCode);
+                        smsBuilder.append(tmpStr).append(" \n\n");
                     }
 
                 } while (cur.moveToNext());
