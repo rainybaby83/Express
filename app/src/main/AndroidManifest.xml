@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <!--读取短信信息的权限-->
     <uses-permission android:name="android.permission.READ_SMS"/>
-    <uses-permission android:name="android.permission.SMS"/>
 
 
     <application

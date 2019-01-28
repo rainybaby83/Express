@@ -7,46 +7,33 @@
               android:orientation="horizontal">
 
     <LinearLayout
+        android:id="@+id/layoutFetch"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:id="@+id/tab_todo"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/btn_todo"
-            android:clickable="false"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-
-            android:background="#00000000"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#ffffff"
-            android:text="未取"/>
+            android:text="未取"
+            android:textColor="#ffffff" />
     </LinearLayout>
+
     <LinearLayout
-        android:id="@+id/id_tab_done"
+        android:id="@+id/layoutDone"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/btn_done"
-            android:clickable="false"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-
-            android:background="#00000000"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#ffffff"
-            android:text="已取"/>
+            android:text="已取"
+            android:textColor="#ffffff" />
     </LinearLayout>
 
 
