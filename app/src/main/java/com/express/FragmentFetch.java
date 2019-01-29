@@ -1,5 +1,7 @@
 package com.express;
 
+import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
@@ -20,11 +22,13 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 public class FragmentFetch extends ListFragment {
-    List<Sms> mSmsList;
+    List<Sms> mSmsList = new ArrayList<>();
     ListSmsAdapter mAdapter;
+    Context mContext = getContext();
 
     @Nullable
     @Override
@@ -35,15 +39,15 @@ public class FragmentFetch extends ListFragment {
     @Override
     public void onStart() {
         super.onStart();
-        TextView txtCode = this.getActivity().findViewById(R.id.)
+        mContext = getActivity();
     }
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mSmsList = new ArrayList<>();
 
-        mAdapter = new ListSmsAdapter(getContext(),R.layout.list_item,mSmsList);
+        mAdapter = new ListSmsAdapter(mContext,R.layout.list_item,mSmsList);
         this.setListAdapter(mAdapter);
     }
 
@@ -56,7 +60,8 @@ public class FragmentFetch extends ListFragment {
 
 
     public void refresh(List<Sms> mList) {
-//        this.mSmsList = mList;
-//        this.setListAdapter(mAdapter);
+        this.mSmsList = mList;
+        mAdapter = new ListSmsAdapter(mContext,R.layout.list_item,mSmsList);
+        this.setListAdapter(mAdapter);
     }
 }

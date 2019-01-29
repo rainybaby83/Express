@@ -5,6 +5,7 @@ import android.Manifest;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.icu.text.SimpleDateFormat;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -20,7 +21,9 @@ import android.widget.Toast;
 import com.idescout.sql.SqlScoutServer;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 
 public class MainActivity extends FragmentActivity implements OnClickListener{
@@ -29,7 +32,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
     public SQLiteDatabase db;
 
     //Tab分别对应的Fragment
-    private FragmentFetch fragmentFetch;
+    private FragmentFetch fragmentFetch ;
     private Fragment fragmentDone;
 
 //    public AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -46,13 +49,17 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
         setContentView(R.layout.activity_main);
         databaseHelper = new DatabaseHelper(this);
         db = databaseHelper.getWritableDatabase();
-
         this.dbSample();
         this.viewInit();//初始化控件
-        this.selectTab(0);//默认选中第一个Tab
+
     }
 
-
+    @Override
+    protected void onStart() {
+        super.onStart();
+//        fragmentFetch = new FragmentFetch();
+        this.selectTab(0);//默认选中第一个Tab
+    }
 
     //处理Tab的点击事件
     @Override
@@ -97,11 +104,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
                 //如果微信对应的Fragment没有实例化，则进行实例化，并显示出来
                 if (fragmentFetch == null) {
                     fragmentFetch = new FragmentFetch();
+                    fragmentFetch.refresh(getSmsFromDB("未取"));
                     transaction.add(R.id.frameLayout, fragmentFetch);
                 } else {
                     //如果微信对应的Fragment已经实例化，则直接显示出来
-                    transaction.show(fragmentFetch);
                     fragmentFetch.refresh(getSmsFromDB("未取"));
+                    transaction.show(fragmentFetch);
                 }
 
                 break;
@@ -274,8 +282,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
 
     public void dbSample() {
 
+        SimpleDateFormat df = new SimpleDateFormat("MMdd HHmmss");//设置日期格式
+
         ContentValues contentValues = new ContentValues();
-        contentValues.put("smsID", "20162546");
+        contentValues.put("smsID", df.format(new Date()));
         contentValues.put("smsDate", "1-17");
         contentValues.put("code", "code");
         contentValues.put("phone", "phone");

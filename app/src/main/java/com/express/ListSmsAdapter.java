@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
 public class ListSmsAdapter extends ArrayAdapter<Sms> {
 
     private int resourceId;
-    public ListSmsAdapter(@NonNull Context context, int resource, @NonNull List<Sms> objects) {
+    ListSmsAdapter(@NonNull Context context, int resource, @NonNull List<Sms> objects) {
         super(context, resource, objects);
         resourceId = resource;
     }
@@ -24,11 +25,16 @@ public class ListSmsAdapter extends ArrayAdapter<Sms> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        Sms sms = getItem(position);//获取food对象
+        Sms sms = getItem(position);//获取sms对象
         @SuppressLint("ViewHolder") View view = LayoutInflater.from(getContext()).inflate(resourceId,null);
-        TextView textView = view.findViewById(R.id.text_item);
+        TextView txtCode = view.findViewById(R.id.list_text_code);
+        Button btnFetch = view.findViewById(R.id.btnFetch);
+
         assert sms != null;
-        textView.setText(sms.getCode());
+        if (sms.getFetchStatus() == "已取") {
+            btnFetch.setVisibility(Button.INVISIBLE);
+        }
+        txtCode.setText(sms.getCode());
         return view;
     }
 }
