@@ -20,12 +20,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String sqlCreate =
                 "CREATE TABLE IF NOT EXISTS express " +
-                        "(ID        INTEGER   PRIMARY KEY NOT NULL, " +
-                        "smsID      INTEGER   NOT NULL, " +
+                        "(ID        int      PRIMARY KEY NOT NULL, " +
+                        "smsID      TEXT      NOT NULL, " +
                         "smsDate    TEXT      NOT NULL, " +
                         "code       TEXT      NOT NULL, " +
                         "phone      TEXT      NOT NULL, " +
-                        "type       TEXT      NOT NULL, " +
+                        "position   TEXT      NOT NULL, " +
                         "fetchDate  TEXT      NOT NULL, " +
                         "status     INTEGER   NOT NULL )";
         db.execSQL(sqlCreate);

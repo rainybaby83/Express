@@ -1,28 +1,28 @@
 package com.express;
 
-public class smsTable {
+public class Sms {
     public int id;
-    public int smsID;
+    public String smsID;
     public String smsDate;
     public String code;
     public String phone;
-    public String type;
+    public String position;
     public String fetchDate;
     public int status;  // 0未取，1已取
 
-    public smsTable(int id,int smsID,String smsDate,String code,String phone,String type,String fetchDate,int status) {
+    public Sms(int id, String smsID, String smsDate, String code, String phone, String position, String fetchDate, int status) {
         this.id = id;
         this.smsID = smsID;
         this.smsDate = smsDate;
         this.code = code;
         this.phone = phone;
-        this.type = type;
+        this.position = position;
         this.fetchDate = fetchDate;
         this.status = status;  // 0未取，1已取
 
     }
 
-    public boolean compare(smsTable newTable) {
+    public boolean compare(Sms newTable) {
         return false;
     }
 
@@ -31,9 +31,14 @@ public class smsTable {
         return fetchDate;
     }
 
+    public String getCode() {
+        return code;
+    }
+
     public void setFetchDate(String str) {
         this.fetchDate = str;
     }
+
 
 
 }
