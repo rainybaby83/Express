@@ -23,7 +23,6 @@ import com.idescout.sql.SqlScoutServer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 
 public class MainActivity extends FragmentActivity implements OnClickListener{
@@ -34,6 +33,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
     //Tab分别对应的Fragment
     private FragmentFetch fragmentFetch ;
     private Fragment fragmentDone;
+    private static MainActivity mInstance;
+
 
 //    public AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -43,23 +44,25 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         sqlScoutServer = SqlScoutServer.create(this, getPackageName());
         super.onCreate(savedInstanceState);
+        mInstance =this;
         //设置短信权限
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_SMS},    1);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+
+
         databaseHelper = new DatabaseHelper(this);
         db = databaseHelper.getWritableDatabase();
         this.dbSample();
         this.viewInit();//初始化控件
+        this.selectTab(0);
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-//        fragmentFetch = new FragmentFetch();
-        this.selectTab(0);//默认选中第一个Tab
+    public static MainActivity getInstance() {
+        return mInstance;
     }
+
 
     //处理Tab的点击事件
     @Override
@@ -75,9 +78,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
     }
 
 
-
-
-
     private void viewInit() {
         //初始化Tab的布局文件
         //Tab的布局文件
@@ -87,7 +87,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
         layoutFetch.setOnClickListener(this);
         layoutDone.setOnClickListener(this);
     }
-
 
 
     //进行选中Tab的处理
@@ -159,7 +158,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
         Cursor cur =db.query(DatabaseHelper.dbTableName,new String[]{"smsID,smsDate,code,phone,position,fetchDate"},
                 "fetchStatus = ?",new String[]{fetchStatus},null,null,"smsDate desc");
         List<Sms> mItem = new ArrayList<>();
-        Toast.makeText(MainActivity.this,"getSmsFromDB" ,Toast.LENGTH_LONG ).show();
         if (cur.moveToFirst()) {
             Sms tmpSms = null;
             int indexSmsID = cur.getColumnIndex("smsID");
@@ -177,6 +175,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
                 String fetchDate =  cur.getString(indexFetchDate);
 
                 tmpSms = new Sms(smsID,smsDate,code,phone,position,fetchDate, fetchStatus);
+
                 mItem.add(tmpSms);
             } while (cur.moveToNext());
 

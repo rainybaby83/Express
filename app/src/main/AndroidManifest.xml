@@ -3,11 +3,9 @@
     package="com.express"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!--收短信的权限-->
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
-    <!--读取短信信息的权限-->
     <uses-permission android:name="android.permission.READ_SMS"/>
-
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <application
         android:allowBackup="true"

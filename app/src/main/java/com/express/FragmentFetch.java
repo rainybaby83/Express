@@ -1,6 +1,7 @@
 package com.express;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
@@ -26,9 +27,16 @@ import java.util.Objects;
 
 
 public class FragmentFetch extends ListFragment {
-    List<Sms> mSmsList = new ArrayList<>();
+    List<Sms> mSmsList;
     ListSmsAdapter mAdapter;
-    Context mContext = getContext();
+    Context mContext;
+
+    public FragmentFetch() {
+        mSmsList = new ArrayList<>();
+        mContext=MainActivity.getInstance();
+        mAdapter = new ListSmsAdapter(mContext,R.layout.list_item,mSmsList);
+        this.setListAdapter(mAdapter);
+    }
 
     @Nullable
     @Override
@@ -37,20 +45,9 @@ public class FragmentFetch extends ListFragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        mContext = getActivity();
-    }
-
-
-    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mAdapter = new ListSmsAdapter(mContext,R.layout.list_item,mSmsList);
-        this.setListAdapter(mAdapter);
     }
-
 
 
     @Override
