@@ -17,6 +17,9 @@ import java.util.List;
 public class ListSmsAdapter extends ArrayAdapter<Sms> {
 
     private int resourceId;
+    private Button btnFetch;
+
+
     ListSmsAdapter(@NonNull Context context, int resource, @NonNull List<Sms> objects) {
         super(context, resource, objects);
         resourceId = resource;
@@ -32,7 +35,7 @@ public class ListSmsAdapter extends ArrayAdapter<Sms> {
         TextView txtCode = view.findViewById(R.id.itemCode);
         TextView txtPhone = view.findViewById(R.id.itemPhone);
         TextView txtSmsID = view.findViewById(R.id.itemSmsID);
-        Button btnFetch = view.findViewById(R.id.btnFetch);
+        btnFetch = view.findViewById(R.id.btnFetch);
 
         assert sms != null;
 //        if (sms.getFetchStatus() == "已取") {
@@ -45,4 +48,9 @@ public class ListSmsAdapter extends ArrayAdapter<Sms> {
         txtSmsID.setText(sms.getSmsID());
         return view;
     }
+
+    public void setButtonClickListener(View.OnClickListener v) {
+        btnFetch.setOnClickListener(v);
+    }
+
 }

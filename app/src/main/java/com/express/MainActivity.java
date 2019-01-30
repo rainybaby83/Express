@@ -2,16 +2,20 @@ package com.express;
 
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.icu.text.SimpleDateFormat;
+import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -20,41 +24,41 @@ import android.widget.Toast;
 
 import com.idescout.sql.SqlScoutServer;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 
-public class MainActivity extends FragmentActivity implements OnClickListener{
+public class MainActivity extends FragmentActivity implements OnClickListener {
     public DatabaseHelper databaseHelper;
     public SqlScoutServer sqlScoutServer;
     public SQLiteDatabase db;
+    public String tel;
 
     //Tab分别对应的Fragment
-    private FragmentFetch fragmentFetch ;
+    private FragmentFetch fragmentFetch;
     private Fragment fragmentDone;
     private static MainActivity mInstance;
 
 
-//    public AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-
-
+    @SuppressLint({"HardwareIds", "MissingPermission"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         sqlScoutServer = SqlScoutServer.create(this, getPackageName());
         super.onCreate(savedInstanceState);
-        mInstance =this;
+        mInstance = this;
+
         //设置短信权限
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_SMS},    1);
+        String[] permissions = new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.RECEIVE_SMS, Manifest.permission.REQUEST_INSTALL_PACKAGES};
+        ActivityCompat.requestPermissions(this, permissions, 1);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
-
-        databaseHelper = new DatabaseHelper(this);
-        db = databaseHelper.getWritableDatabase();
-        this.dbSample();
-        this.viewInit();//初始化控件
+        this.appInit();//初始化控件
+        checkSmsFromPhone();
         this.selectTab(0);
 
     }
@@ -78,7 +82,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
     }
 
 
-    private void viewInit() {
+    @SuppressLint({"MissingPermission", "HardwareIds"})
+    private void appInit() {
         //初始化Tab的布局文件
         //Tab的布局文件
         LinearLayout layoutFetch = findViewById(R.id.layoutFetch);
@@ -86,6 +91,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
         //初始化Tab的点击事件
         layoutFetch.setOnClickListener(this);
         layoutDone.setOnClickListener(this);
+
+        databaseHelper = new DatabaseHelper(this);
+        db = databaseHelper.getWritableDatabase();
+        tel = ((TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
+        tel = StringUtils.right(tel, 4);
     }
 
 
@@ -137,19 +147,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
     }
 
 
-
-
-
-
-
     //同步本地数据到服务器。返回boolean
     public void syncDB() {
-
-    }
-
-    //逐条，将手机短信与本地数据库对比。返回boolean
-    public void compareDB(Sms sms) {
-
     }
 
 
@@ -187,85 +186,75 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
     }
 
 
-//    /**
-//     * 从手机按时间，抓短信，对比数据库
-//     * @return
-//     */
-//    public  String getSmsFromPhone() {
-//
-//        StringBuilder smsBuilder = new StringBuilder();
-//        try {
-//            Uri uri = Uri.parse("content://sms/inbox");
-//            String[] projection = new String[]{"_id", "address", "person", "body", "date", "type",};
-//            //后期改写selection，实现只抓大于同步时间的
-//            Cursor cur = getContentResolver().query(uri, projection, null, null, "date desc"); // 获取手机内部短信
-//
-//            if (cur.moveToFirst()) {
-////                int index_Address = cur.getColumnIndex("address");
-//                int index_Body = cur.getColumnIndex("body");
-//                int index_Date = cur.getColumnIndex("date");
-//                Sms tmpSms;
-//                String smsID;
-//                String strCode;
-//
-//
-//                do {
-//                    String strBody = cur.getString(index_Body);
-//                    long longDate = cur.getLong(index_Date);
-//                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
-//                    Date d = new Date(longDate);
-//                    String strDate = dateFormat.format(d);
-////                    StringBuilder tmpStr = new StringBuilder();
-//                    tmpSms = null;
-//                    smsIdD = String.valueOf(d);
-//                    strCode = null;
-//
-///*
-//                    if (strBody.contains("馒头房")) {
-//
-//                        strCode = StringUtils.substringBetween(strBody, "提货码", "来取");
-//                        tmpSms = new Sms(0,smsId,strDate,strCode,"7350","馒头房",null,0);
-//                        fragmentFetch.mSmsList.add(tmpSms);
-////                        tmpStr.append(strDate).append("：馒头房：").append(expressCode);
-////                        smsBuilder.append(tmpStr).append(" \n\n");
-//
-//                    } else if (strBody.contains("丰巢")) {
-//                        strCode = StringUtils.substringBetween(strBody, "请凭取件码『", "』前往明珠西苑");
-//                        tmpSms = new Sms(0,smsId,strDate,strCode,"7350","丰巢",null,0);
-//                        fragmentFetch.mSmsList.add(tmpSms);
-////                        tmpStr.append(strDate).append("：丰巢：").append(expressCode);
-////                        smsBuilder.append(tmpStr).append(" \n\n");
-//
-//                    } else if (strBody.contains("日日顺")) {
-//                        strCode = StringUtils.substringBetween(strBody, "凭取件码", "到明珠西苑");
-//                        tmpSms = new Sms(0,smsId,strDate,strCode,"7350","日日顺",null,0);
-//                        fragmentFetch.mSmsList.add(tmpSms);
-////                        tmpStr.append(strDate).append("：日日顺：").append(expressCode);
-////                        smsBuilder.append(tmpStr).append(" \n\n");
-//                    }
-//*/
-//                } while (cur.moveToNext());
-//
-//                if (!cur.isClosed()) {
-//                    cur.close();
-//                }
-//            } else {
-//                smsBuilder.append("no result!");
-//            }
-//
-//
-//        } catch (SQLiteException ex) {
-//            Log.d("SQLiteException in getSmsFromPhone", ex.getMessage());
-//        } catch (NullPointerException ignored) {
-//        }
-//
-//        return smsBuilder.toString();
-//    }
-//
+    /**
+     * 从手机按时间，抓短信，对比数据库
+     */
+    public void checkSmsFromPhone() {
+        try {
+            Uri uri = Uri.parse("content://sms/");
+            String[] projection = new String[]{"body", "date"};
+            //后期改写selection，实现只抓大于同步时间的
+            Cursor cur = getContentResolver().query(uri, projection, null, null, "date desc"); // 获取手机内部短信
+
+            if (cur.moveToFirst()) {
+
+                int index_Body = cur.getColumnIndex("body");
+                int index_Date = cur.getColumnIndex("date");
+                String strCode = null;
+                String position = null;
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+
+
+                do {
+                    String longBody = cur.getString(index_Body);
+                    if (longBody.contains("馒头房") || longBody.contains("丰巢") || longBody.contains("日日顺")) {
+                        Sms tmpSms;
+                        long longDate = cur.getLong(index_Date);
+                        String smsID = String.valueOf(longDate);
+                        String strDate = dateFormat.format(new Date(longDate));
+
+                        if (!existInDB(smsID)) {
+                            if (longBody.contains("馒头房")) {
+                                position = "馒头房";
+                                strCode = StringUtils.substringBetween(longBody, "提货码", "来取");
+                            } else if (longBody.contains("丰巢")) {
+                                position = "丰巢";
+                                strCode = StringUtils.substringBetween(longBody, "请凭取件码『", "』前往明珠西苑");
+                            } else if (longBody.contains("日日顺")) {
+                                position = "日日顺";
+                                strCode = StringUtils.substringBetween(longBody, "凭取件码", "到明珠西苑");
+                            }
+                            tmpSms = new Sms(smsID, strDate, strCode, tel, position, "", "未取");//不能用null，不然报错
+                            boolean a = insertSms(tmpSms);
+
+                        }
+
+                    }
+                } while (cur.moveToNext());
+
+                if (!cur.isClosed()) {
+                    cur.close();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+    }
+
+
+
+
+    //逐条，将手机短信与本地数据库对比。返回boolean
+    public boolean existInDB(String smsID) {
+
+        @SuppressLint("Recycle") Cursor cur = db.query(true, DatabaseHelper.dbTableName, new String[]{"smsID"},
+                "smsID = ?", new String[]{smsID}, null, null, "smsID desc", "1");
+        return cur.moveToFirst();
+    }
 
 
     //对比之后，往数据里写短信
-    public void insertSms(Sms sms) {
+    public boolean insertSms(Sms sms) {
         ContentValues cv = new ContentValues();
         cv.put("smsID", sms.getSmsID());
         cv.put("smsDate", sms.getSmsDate());
@@ -274,20 +263,23 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
         cv.put("position", sms.getPosition());
         cv.put("fetchDate", sms.getFetchDate());
         cv.put("fetchStatus", sms.getFetchStatus());
+
         long rowId = db.insert(DatabaseHelper.dbTableName, null, cv);
-        Toast.makeText(this, String.valueOf(rowId), Toast.LENGTH_LONG).show();
+        return (rowId == -1);
     }
+
 
 
     public void dbSample() {
 
-        SimpleDateFormat df = new SimpleDateFormat("MMdd HHmmss");//设置日期格式
+        SimpleDateFormat df1 = new SimpleDateFormat("MMdd HHmmss");//设置日期格式
+        SimpleDateFormat df2 = new SimpleDateFormat("M-dd");//设置日期格式
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put("smsID", df.format(new Date()));
-        contentValues.put("smsDate", "1-17");
+        contentValues.put("smsID", df1.format(new Date()));
+        contentValues.put("smsDate", df2.format(new Date()));
         contentValues.put("code", "12345678");
-        contentValues.put("phone", "张");
+        contentValues.put("phone", tel);
         contentValues.put("position", "日日顺");
         contentValues.put("fetchDate", "1-28");
         contentValues.put("fetchStatus", "未取");
@@ -295,4 +287,13 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
         Toast.makeText(MainActivity.this, String.valueOf(rowId), Toast.LENGTH_SHORT).show();
     }
 
+
+    class btnLister implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+
+        }
+    }
+
 }
+

@@ -45,7 +45,6 @@ public class FragmentFetch extends ListFragment {
 
 
     public void refresh(List<Sms> mList) {
-
         //旧方法
         this.mSmsList = mList;
         mAdapter = new ListSmsAdapter(mContext,R.layout.list_item_fecth,mSmsList);
