@@ -286,9 +286,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener{
         ContentValues contentValues = new ContentValues();
         contentValues.put("smsID", df.format(new Date()));
         contentValues.put("smsDate", "1-17");
-        contentValues.put("code", "code");
-        contentValues.put("phone", "phone");
-        contentValues.put("position", "position");
+        contentValues.put("code", "12345678");
+        contentValues.put("phone", "张");
+        contentValues.put("position", "日日顺");
         contentValues.put("fetchDate", "1-28");
         contentValues.put("fetchStatus", "未取");
         long rowId = db.insert(DatabaseHelper.dbTableName, null, contentValues);

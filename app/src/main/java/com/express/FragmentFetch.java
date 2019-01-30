@@ -1,29 +1,16 @@
 package com.express;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.TextView;
 
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Text;
-
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 public class FragmentFetch extends ListFragment {
@@ -34,7 +21,8 @@ public class FragmentFetch extends ListFragment {
     public FragmentFetch() {
         mSmsList = new ArrayList<>();
         mContext=MainActivity.getInstance();
-        mAdapter = new ListSmsAdapter(mContext,R.layout.list_item,mSmsList);
+        // mSmsList 旧方法
+        mAdapter = new ListSmsAdapter(mContext,R.layout.list_item_fecth,mSmsList);
         this.setListAdapter(mAdapter);
     }
 
@@ -57,8 +45,16 @@ public class FragmentFetch extends ListFragment {
 
 
     public void refresh(List<Sms> mList) {
+
+        //旧方法
         this.mSmsList = mList;
-        mAdapter = new ListSmsAdapter(mContext,R.layout.list_item,mSmsList);
+        mAdapter = new ListSmsAdapter(mContext,R.layout.list_item_fecth,mSmsList);
         this.setListAdapter(mAdapter);
+
+        //新方法
+//        mAdapter.clear();
+//        mAdapter.addAll(mList);
+//        this.setListAdapter(mAdapter);
     }
+
 }
