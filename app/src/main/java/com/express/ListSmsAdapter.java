@@ -11,18 +11,21 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
 public class ListSmsAdapter extends ArrayAdapter<Sms> {
 
     private int resourceId;
-    private Button btnFetch;
-
+    public Button btnFetch;
+    private String mSmsID;
 
     ListSmsAdapter(@NonNull Context context, int resource, @NonNull List<Sms> objects) {
         super(context, resource, objects);
         resourceId = resource;
+
+
     }
 
     @NonNull
@@ -35,22 +38,29 @@ public class ListSmsAdapter extends ArrayAdapter<Sms> {
         TextView txtCode = view.findViewById(R.id.itemCode);
         TextView txtPhone = view.findViewById(R.id.itemPhone);
         TextView txtSmsID = view.findViewById(R.id.itemSmsID);
-        btnFetch = view.findViewById(R.id.btnFetch);
 
         assert sms != null;
-//        if (sms.getFetchStatus() == "已取") {
-//            btnFetch.setVisibility(Button.INVISIBLE);
-//        }
         txtDate.setText(sms.getSmsDate());
         txtPosition.setText(sms.getPosition());
         txtCode.setText(sms.getCode());
         txtPhone.setText(sms.getPhone());
         txtSmsID.setText(sms.getSmsID());
+
+        btnFetch = view.findViewById(R.id.btnFetch);
+        btnFetch.setTag(position);
+        btnFetch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Sms sms = getItem((Integer) v.getTag());
+                mSmsID = sms.getSmsID();
+            }
+        });
+
         return view;
     }
 
-    public void setButtonClickListener(View.OnClickListener v) {
-        btnFetch.setOnClickListener(v);
+    public String getSmsID() {
+        return mSmsID;
     }
 
 }

@@ -23,6 +23,7 @@ public class FragmentFetch extends ListFragment {
         mContext=MainActivity.getInstance();
         // mSmsList 旧方法
         mAdapter = new ListSmsAdapter(mContext,R.layout.list_item_fecth,mSmsList);
+//        mAdapter.btnFetch.setOnClickListener();
         this.setListAdapter(mAdapter);
     }
 
