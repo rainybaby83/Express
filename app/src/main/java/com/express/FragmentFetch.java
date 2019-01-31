@@ -14,17 +14,15 @@ import java.util.List;
 
 
 public class FragmentFetch extends ListFragment {
-    List<Sms> mSmsList;
     ListSmsAdapter mAdapter;
     Context mContext;
 
     public FragmentFetch() {
-        mSmsList = new ArrayList<>();
+        List<Sms> mSmsList = new ArrayList<>();
         mContext=MainActivity.getInstance();
-        // mSmsList 旧方法
         mAdapter = new ListSmsAdapter(mContext,R.layout.list_item_fecth,mSmsList);
-//        mAdapter.btnFetch.setOnClickListener();
         this.setListAdapter(mAdapter);
+
     }
 
     @Nullable
@@ -36,25 +34,13 @@ public class FragmentFetch extends ListFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
-
-
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-    }
-
 
     public void refresh(List<Sms> mList) {
-        //旧方法
-        this.mSmsList = mList;
-        mAdapter = new ListSmsAdapter(mContext,R.layout.list_item_fecth,mSmsList);
+        mAdapter.clear();
+        mAdapter.addAll(mList);
         this.setListAdapter(mAdapter);
-
-        //新方法
-//        mAdapter.clear();
-//        mAdapter.addAll(mList);
-//        this.setListAdapter(mAdapter);
     }
 
 }

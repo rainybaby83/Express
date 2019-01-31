@@ -45,14 +45,23 @@ public class ListSmsAdapter extends ArrayAdapter<Sms> {
         txtCode.setText(sms.getCode());
         txtPhone.setText(sms.getPhone());
         txtSmsID.setText(sms.getSmsID());
-
         btnFetch = view.findViewById(R.id.btnFetch);
-        btnFetch.setTag(position);
+        btnFetch.setTag(position-1);
+
         btnFetch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Sms sms = getItem((Integer) v.getTag());
-                mSmsID = sms.getSmsID();
+                if (btnFetch.getVisibility() == Button.VISIBLE) {
+                    int tag = (int) btnFetch.getTag();
+                    int tag2 = (Integer) v.getTag();
+                    Sms sms = getItem(tag);
+                    boolean returnValue  = DBManager.updateFetchStatus(sms.getSmsID());
+                    if (returnValue) {
+                        btnFetch.setVisibility(Button.INVISIBLE);
+                    }
+                }
+
+
             }
         });
 

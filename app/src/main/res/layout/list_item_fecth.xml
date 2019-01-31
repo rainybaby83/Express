@@ -102,7 +102,7 @@
             android:layout_height="match_parent"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
-            android:background="@drawable/btn_bg_red"
+            android:background="@drawable/btn_style"
             android:text="取件"
             android:textColor="#fff" />
 

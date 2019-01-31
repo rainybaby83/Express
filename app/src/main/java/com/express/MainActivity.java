@@ -32,8 +32,8 @@ import static android.content.pm.PermissionInfo.PROTECTION_SIGNATURE;
 
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
-    public DatabaseHelper dbHelperExpress;
-    public SQLiteDatabase db;
+//    public DatabaseHelper dbHelperExpress;
+//    public SQLiteDatabase db;
     public String mTelNum;
 
     //Tab分别对应的Fragment
@@ -50,8 +50,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         ActivityCompat.requestPermissions(this, permissions, 2);
 
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
         mInstance = this;
         this.appInit();//初始化控件
 
@@ -89,8 +89,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         layoutFetch.setOnClickListener(this);
         layoutDone.setOnClickListener(this);
 
-        dbHelperExpress = new DatabaseHelper(this);
-        db = dbHelperExpress.getWritableDatabase();
+//        dbHelperExpress = new DatabaseHelper(this);
+//        db = dbHelperExpress.getWritableDatabase();
         mTelNum = ((TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
         mTelNum = StringUtils.right(mTelNum, 4);
     }
@@ -111,11 +111,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 //如果微信对应的Fragment没有实例化，则进行实例化，并显示出来
                 if (fragmentFetch == null) {
                     fragmentFetch = new FragmentFetch();
-                    fragmentFetch.refresh(getSmsFromDB("未取"));
+                    fragmentFetch.refresh(DBManager.getSmsFromDB("未取"));
                     transaction.add(R.id.frameLayout, fragmentFetch);
                 } else {
                     //如果微信对应的Fragment已经实例化，则直接显示出来
-                    fragmentFetch.refresh(getSmsFromDB("未取"));
+                    fragmentFetch.refresh(DBManager.getSmsFromDB("未取"));
                     transaction.show(fragmentFetch);
                 }
 
@@ -145,55 +145,53 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     }
 
 
-    //同步本地数据到服务器。返回boolean
-    public void syncDB() {
-    }
 
 
-    //从本地数据库抓短信，返回list，展示在fragment
-    public List<Sms> getSmsFromDB(String fetchStatus) {
-        Cursor cur = db.query(DatabaseHelper.dbTableName, new String[]{"sms_id,sms_date,sms_code,sms_phone,sms_position,sms_fetch_date"},
-                "sms_fetch_status = ?", new String[]{fetchStatus}, null, null, "sms_date desc");
-        List<Sms> mItem = new ArrayList<>();
-        if (cur.moveToFirst()) {
-            Sms tmpSms = null;
-            int indexSmsID = cur.getColumnIndex("sms_id");
-            int indexSmsDate = cur.getColumnIndex("sms_date");
-            int indexCode = cur.getColumnIndex("sms_code");
-            int indexPhone = cur.getColumnIndex("sms_phone");
-            int indexPosition = cur.getColumnIndex("sms_position");
-            int indexFetchDate = cur.getColumnIndex("sms_fetch_date");
-            do {
-                String smsID = cur.getString(indexSmsID);
-                String smsDate = cur.getString(indexSmsDate);
-                String code = cur.getString(indexCode);
-                String phone = cur.getString(indexPhone);
-                String position = cur.getString(indexPosition);
-                String fetchDate = cur.getString(indexFetchDate);
 
-                tmpSms = new Sms(smsID, smsDate, code, phone, position, fetchDate, fetchStatus);
-
-                mItem.add(tmpSms);
-            } while (cur.moveToNext());
-
-            if (!cur.isClosed()) {
-                cur.close();
-            }
-        }
-        return mItem;
-    }
+//    //从本地数据库抓短信，返回list，展示在fragment
+//    public List<Sms> getSmsFromDB(String fetchStatus) {
+//        Cursor cur = db.query(DatabaseHelper.dbTableName, new String[]{"sms_id,sms_date,sms_code,sms_phone,sms_position,sms_fetch_date"},
+//                "sms_fetch_status = ?", new String[]{fetchStatus}, null, null, "sms_date desc");
+//        List<Sms> mItem = new ArrayList<>();
+//        if (cur.moveToFirst()) {
+//            Sms tmpSms = null;
+//            int indexSmsID = cur.getColumnIndex("sms_id");
+//            int indexSmsDate = cur.getColumnIndex("sms_date");
+//            int indexCode = cur.getColumnIndex("sms_code");
+//            int indexPhone = cur.getColumnIndex("sms_phone");
+//            int indexPosition = cur.getColumnIndex("sms_position");
+//            int indexFetchDate = cur.getColumnIndex("sms_fetch_date");
+//            do {
+//                String smsID = cur.getString(indexSmsID);
+//                String smsDate = cur.getString(indexSmsDate);
+//                String code = cur.getString(indexCode);
+//                String phone = cur.getString(indexPhone);
+//                String position = cur.getString(indexPosition);
+//                String fetchDate = cur.getString(indexFetchDate);
+//
+//                tmpSms = new Sms(smsID, smsDate, code, phone, position, fetchDate, fetchStatus);
+//
+//                mItem.add(tmpSms);
+//            } while (cur.moveToNext());
+//
+//            if (!cur.isClosed()) {
+//                cur.close();
+//            }
+//        }
+//        return mItem;
+//    }
 
 
     /**
      * 从手机按时间，抓短信，对比数据库
      */
-    public boolean checkSmsFromPhone() {
+    public static boolean checkSmsFromPhone() {
         try {
             Uri uri = Uri.parse("content://sms/");
             String[] columns = new String[]{"body", "date"};
             String where = "(body like '%馒头房%'  OR  body like '%丰巢%'  OR  body like '%日日顺%')";
 //            String[] args = new String[]{"馒头房","丰巢","日日顺"};
-            Cursor cur = this.getContentResolver().query(uri, columns, where, null, "date desc"); // 获取手机内部短信
+            Cursor cur = MainActivity.getInstance().getContentResolver().query(uri, columns, where, null, "date desc"); // 获取手机内部短信
 
             if (cur != null && cur.moveToFirst()) {
                 int index_Body = cur.getColumnIndex("body");
@@ -209,7 +207,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                     String smsID = String.valueOf(longDate);
                     String strDate = dateFormat.format(new Date(longDate));
 
-                    if (!existInDatabase(smsID)) {
+                    if (DBManager.existInDatabase(smsID)==false) {
                         if (longBody.contains("馒头房")) {
                             position = "馒头房";
                             strCode = StringUtils.substringBetween(longBody, "提货码", "来取");
@@ -220,8 +218,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                             position = "日日顺";
                             strCode = StringUtils.substringBetween(longBody, "凭取件码", "到明珠西苑");
                         }
-                        tmpSms = new Sms(smsID, strDate, strCode, mTelNum, position, null, "未取");
-                        boolean a = insertSms(tmpSms);
+                        tmpSms = new Sms(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, "未取");
+                        boolean a = DBManager.insertSms(tmpSms);
                     }
                 } while (cur.moveToNext());
 
@@ -236,49 +234,29 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     }
 
 
-    //逐条，将手机短信与本地数据库对比。返回boolean
-    public boolean existInDatabase(String smsID) {
-
-        @SuppressLint("Recycle") Cursor cur = db.query(true, DatabaseHelper.dbTableName, new String[]{"sms_id"},
-                "sms_id = ?", new String[]{smsID}, null, null, "sms_id desc", "1");
-        return cur.moveToFirst();
-    }
+//    //逐条，将手机短信与本地数据库对比。返回boolean
+//    public boolean existInDatabase(String smsID) {
+//
+//        @SuppressLint("Recycle") Cursor cur = db.query(true, DatabaseHelper.dbTableName, new String[]{"sms_id"},
+//                "sms_id = ?", new String[]{smsID}, null, null, "sms_id desc", "1");
+//        return cur.moveToFirst();
+//    }
 
 
     //对比之后，往数据里写短信
-    public boolean insertSms(Sms sms) {
-        ContentValues cv = new ContentValues();
-        cv.put("sms_id", sms.getSmsID());
-        cv.put("sms_date", sms.getSmsDate());
-        cv.put("sms_code", sms.getCode());
-        cv.put("sms_phone", sms.getPhone());
-        cv.put("sms_position", sms.getPosition());
-        cv.put("sms_fetch_date", sms.getFetchDate());
-        cv.put("sms_fetch_status", sms.getFetchStatus());
-
-        long rowId = db.insert(DatabaseHelper.dbTableName, null, cv);
-        return (rowId == -1);
-    }
-
-
-
-    public String getDownloadDate() {
-        String strDate = "2019-1-1";
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Long dateLong = null;
-
-        @SuppressLint("Recycle") Cursor cur = db.query(true, DatabaseHelper.dbParaTableName, new String[]{"download_date"},
-                null, null, null, null, null, "1");
-        if (cur.moveToFirst()) {
-            strDate = cur.getString(cur.getColumnIndex("download_date"));
-            try {
-                 dateLong = sdf.parse(strDate).getTime();
-            } catch (ParseException ignored) {
-                return "1546272000000";     //即2019-1-1
-            }
-        }
-        return dateLong.toString();
-    }
+//    public boolean insertSms(Sms sms) {
+//        ContentValues cv = new ContentValues();
+//        cv.put("sms_id", sms.getSmsID());
+//        cv.put("sms_date", sms.getSmsDate());
+//        cv.put("sms_code", sms.getCode());
+//        cv.put("sms_phone", sms.getPhone());
+//        cv.put("sms_position", sms.getPosition());
+//        cv.put("sms_fetch_date", sms.getFetchDate());
+//        cv.put("sms_fetch_status", sms.getFetchStatus());
+//
+//        long rowId = db.insert(DatabaseHelper.dbTableName, null, cv);
+//        return (rowId == -1);
+//    }
 
 
 }
