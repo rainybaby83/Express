@@ -2,7 +2,6 @@ package com.express;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.icu.text.SimpleDateFormat;
@@ -17,7 +16,7 @@ public class DBManager {
 
 
     //对比之后，往数据里写短信
-    static boolean insertSms(Sms sms) {
+    static boolean insertSms(SmsData sms) {
         ContentValues cv = new ContentValues();
         cv.put("sms_id", sms.getSmsID());
         cv.put("sms_date", sms.getSmsDate());
@@ -33,12 +32,12 @@ public class DBManager {
 
 
     //从本地数据库抓短信，返回list，展示在fragment
-    static List<Sms> getSmsFromDB(String fetchStatus) {
+    static List<SmsData> getSmsFromDB(String fetchStatus) {
         Cursor cur = db.query(DatabaseHelper.dbTableName, new String[]{"sms_id,sms_date,sms_code,sms_phone,sms_position,sms_fetch_date"},
-                "sms_fetch_status = ?", new String[]{fetchStatus}, null, null, "sms_date desc");
-        List<Sms> mItem = new ArrayList<>();
+                "sms_fetch_status = ?", new String[]{fetchStatus}, null, null, "sms_phone,sms_date desc");
+        List<SmsData> mItem = new ArrayList<>();
         if (cur.moveToFirst()) {
-            Sms tmpSms = null;
+            SmsData tmpSms = null;
             int indexSmsID = cur.getColumnIndex("sms_id");
             int indexSmsDate = cur.getColumnIndex("sms_date");
             int indexCode = cur.getColumnIndex("sms_code");
@@ -53,7 +52,7 @@ public class DBManager {
                 String position = cur.getString(indexPosition);
                 String fetchDate = cur.getString(indexFetchDate);
 
-                tmpSms = new Sms(smsID, smsDate, code, phone, position, fetchDate, fetchStatus);
+                tmpSms = new SmsData(smsID, smsDate, code, phone, position, fetchDate, fetchStatus);
 
                 mItem.add(tmpSms);
             } while (cur.moveToNext());
@@ -97,10 +96,11 @@ public class DBManager {
         return dateLong.toString();
     }
 
-    static boolean updateFetchStatus(String smsID) {
+    static boolean updateFetch(String smsID, String fetchDate) {
         if (smsID != null) {
             ContentValues cv = new ContentValues();
             cv.put("sms_fetch_status","已取");
+            cv.put("sms_fetch_date",fetchDate);
             int returnValue = db.update(DatabaseHelper.dbTableName, cv, "sms_id = " + smsID, null);
             if (returnValue == -1) {
                 return false;

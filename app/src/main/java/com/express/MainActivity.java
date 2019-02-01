@@ -3,10 +3,9 @@ package com.express;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
@@ -18,17 +17,11 @@ import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.LinearLayout;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
-import static android.content.pm.PermissionInfo.PROTECTION_SIGNATURE;
 
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
@@ -38,25 +31,23 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
     //Tab分别对应的Fragment
     private FragmentFetch fragmentFetch;
-    private Fragment fragmentDone;
+    private FragmentDone fragmentDone;
     private static MainActivity mInstance;
 
     @SuppressLint({"HardwareIds", "MissingPermission"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.activity_main);
         //设置短信权限
         String[] permissions = new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.RECEIVE_SMS, Manifest.permission.REQUEST_INSTALL_PACKAGES};
         ActivityCompat.requestPermissions(this, permissions, 2);
-
-        super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_main);
         mInstance = this;
         this.appInit();//初始化控件
 
-
-        boolean tmp  = checkSmsFromPhone();
+        boolean tmp  = checkFromPhoneAndInsert();
         this.selectTab(0);
     }
 
@@ -71,6 +62,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.layoutFetch:
+
                 selectTab(0);
                 break;
             case R.id.layoutDone:
@@ -89,8 +81,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         layoutFetch.setOnClickListener(this);
         layoutDone.setOnClickListener(this);
 
-//        dbHelperExpress = new DatabaseHelper(this);
-//        db = dbHelperExpress.getWritableDatabase();
         mTelNum = ((TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
         mTelNum = StringUtils.right(mTelNum, 4);
     }
@@ -104,21 +94,19 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         FragmentTransaction transaction = manager.beginTransaction();
         //先隐藏所有的Fragment
         hideFragments(transaction);
-//        checkSmsFromPhone();
+//        checkFromPhoneAndInsert();
         switch (i) {
             //当选中点击的是微信的Tab时
             case 0:
                 //如果微信对应的Fragment没有实例化，则进行实例化，并显示出来
                 if (fragmentFetch == null) {
                     fragmentFetch = new FragmentFetch();
-                    fragmentFetch.refresh(DBManager.getSmsFromDB("未取"));
                     transaction.add(R.id.frameLayout, fragmentFetch);
                 } else {
                     //如果微信对应的Fragment已经实例化，则直接显示出来
-                    fragmentFetch.refresh(DBManager.getSmsFromDB("未取"));
                     transaction.show(fragmentFetch);
                 }
-
+                fragmentFetch.refresh(DBManager.getSmsFromDB("未取"));
                 break;
             case 1:
                 if (fragmentDone == null) {
@@ -127,6 +115,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 } else {
                     transaction.show(fragmentDone);
                 }
+                fragmentDone.refresh(DBManager.getSmsFromDB("已取"));
                 break;
         }
         //不要忘记提交事务
@@ -147,45 +136,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 
 
-
-//    //从本地数据库抓短信，返回list，展示在fragment
-//    public List<Sms> getSmsFromDB(String fetchStatus) {
-//        Cursor cur = db.query(DatabaseHelper.dbTableName, new String[]{"sms_id,sms_date,sms_code,sms_phone,sms_position,sms_fetch_date"},
-//                "sms_fetch_status = ?", new String[]{fetchStatus}, null, null, "sms_date desc");
-//        List<Sms> mItem = new ArrayList<>();
-//        if (cur.moveToFirst()) {
-//            Sms tmpSms = null;
-//            int indexSmsID = cur.getColumnIndex("sms_id");
-//            int indexSmsDate = cur.getColumnIndex("sms_date");
-//            int indexCode = cur.getColumnIndex("sms_code");
-//            int indexPhone = cur.getColumnIndex("sms_phone");
-//            int indexPosition = cur.getColumnIndex("sms_position");
-//            int indexFetchDate = cur.getColumnIndex("sms_fetch_date");
-//            do {
-//                String smsID = cur.getString(indexSmsID);
-//                String smsDate = cur.getString(indexSmsDate);
-//                String code = cur.getString(indexCode);
-//                String phone = cur.getString(indexPhone);
-//                String position = cur.getString(indexPosition);
-//                String fetchDate = cur.getString(indexFetchDate);
-//
-//                tmpSms = new Sms(smsID, smsDate, code, phone, position, fetchDate, fetchStatus);
-//
-//                mItem.add(tmpSms);
-//            } while (cur.moveToNext());
-//
-//            if (!cur.isClosed()) {
-//                cur.close();
-//            }
-//        }
-//        return mItem;
-//    }
-
-
     /**
-     * 从手机按时间，抓短信，对比数据库
+     * 从手机抓短信，对比本地数据库，把数据库不存在的短信，插入进去
      */
-    public static boolean checkSmsFromPhone() {
+    public static boolean checkFromPhoneAndInsert() {
         try {
             Uri uri = Uri.parse("content://sms/");
             String[] columns = new String[]{"body", "date"};
@@ -202,7 +156,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
                 do {
                     String longBody = cur.getString(index_Body);
-                    Sms tmpSms;
+                    SmsData tmpSms;
                     long longDate = cur.getLong(index_Date);
                     String smsID = String.valueOf(longDate);
                     String strDate = dateFormat.format(new Date(longDate));
@@ -218,7 +172,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                             position = "日日顺";
                             strCode = StringUtils.substringBetween(longBody, "凭取件码", "到明珠西苑");
                         }
-                        tmpSms = new Sms(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, "未取");
+                        tmpSms = new SmsData(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, "未取");
                         boolean a = DBManager.insertSms(tmpSms);
                     }
                 } while (cur.moveToNext());
@@ -244,7 +198,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 
     //对比之后，往数据里写短信
-//    public boolean insertSms(Sms sms) {
+//    public boolean insertSms(SmsData sms) {
 //        ContentValues cv = new ContentValues();
 //        cv.put("sms_id", sms.getSmsID());
 //        cv.put("sms_date", sms.getSmsDate());
