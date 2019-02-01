@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.LinearLayout;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,8 +26,6 @@ import java.util.Date;
 
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
-//    public DatabaseHelper dbHelperExpress;
-//    public SQLiteDatabase db;
     public String mTelNum;
 
     //Tab分别对应的Fragment
@@ -38,7 +37,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         setContentView(R.layout.activity_main);
         //设置短信权限
         String[] permissions = new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE,
@@ -52,6 +51,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     }
 
 
+    //获取Activity实例
     public static MainActivity getInstance() {
         return mInstance;
     }

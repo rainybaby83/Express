@@ -34,7 +34,7 @@ public class DBManager {
     //从本地数据库抓短信，返回list，展示在fragment
     static List<SmsData> getSmsFromDB(String fetchStatus) {
         Cursor cur = db.query(DatabaseHelper.dbTableName, new String[]{"sms_id,sms_date,sms_code,sms_phone,sms_position,sms_fetch_date"},
-                "sms_fetch_status = ?", new String[]{fetchStatus}, null, null, "sms_phone,sms_date desc");
+                "sms_fetch_status = ?", new String[]{fetchStatus}, null, null, "sms_position,sms_date desc");
         List<SmsData> mItem = new ArrayList<>();
         if (cur.moveToFirst()) {
             SmsData tmpSms = null;
@@ -83,7 +83,7 @@ public class DBManager {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Long dateLong = null;
 
-        @SuppressLint("Recycle") Cursor cur = db.query(true, DatabaseHelper.dbParaTableName, new String[]{"download_date"},
+        @SuppressLint("Recycle") Cursor cur = db.query(true, DatabaseHelper.dbParamTableName, new String[]{"download_date"},
                 null, null, null, null, null, "1");
         if (cur.moveToFirst()) {
             strDate = cur.getString(cur.getColumnIndex("download_date"));
