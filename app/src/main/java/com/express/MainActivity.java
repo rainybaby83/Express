@@ -5,11 +5,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.icu.text.SimpleDateFormat;
+
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -22,6 +20,7 @@ import android.widget.LinearLayout;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -117,7 +116,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 }
                 fragmentDone.refresh(DBManager.getSmsFromDB("已取"));
                 break;
+            default:
+                break;
         }
+
         //不要忘记提交事务
         transaction.commit();
     }
@@ -148,20 +150,20 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             Cursor cur = MainActivity.getInstance().getContentResolver().query(uri, columns, where, null, "date desc"); // 获取手机内部短信
 
             if (cur != null && cur.moveToFirst()) {
-                int index_Body = cur.getColumnIndex("body");
-                int index_Date = cur.getColumnIndex("date");
+                int indexBody = cur.getColumnIndex("body");
+                int indexDate = cur.getColumnIndex("date");
                 String strCode = null;
                 String position = null;
-                SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd");
 
                 do {
-                    String longBody = cur.getString(index_Body);
+                    String longBody = cur.getString(indexBody);
                     SmsData tmpSms;
-                    long longDate = cur.getLong(index_Date);
+                    long longDate = cur.getLong(indexDate);
                     String smsID = String.valueOf(longDate);
                     String strDate = dateFormat.format(new Date(longDate));
 
-                    if (DBManager.existInDatabase(smsID)==false) {
+                    if (!DBManager.existInDatabase(smsID)) {
                         if (longBody.contains("馒头房")) {
                             position = "馒头房";
                             strCode = StringUtils.substringBetween(longBody, "提货码", "来取");
@@ -186,31 +188,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
         return false;
     }
-
-
-//    //逐条，将手机短信与本地数据库对比。返回boolean
-//    public boolean existInDatabase(String smsID) {
-//
-//        @SuppressLint("Recycle") Cursor cur = db.query(true, DatabaseHelper.dbTableName, new String[]{"sms_id"},
-//                "sms_id = ?", new String[]{smsID}, null, null, "sms_id desc", "1");
-//        return cur.moveToFirst();
-//    }
-
-
-    //对比之后，往数据里写短信
-//    public boolean insertSms(SmsData sms) {
-//        ContentValues cv = new ContentValues();
-//        cv.put("sms_id", sms.getSmsID());
-//        cv.put("sms_date", sms.getSmsDate());
-//        cv.put("sms_code", sms.getCode());
-//        cv.put("sms_phone", sms.getPhone());
-//        cv.put("sms_position", sms.getPosition());
-//        cv.put("sms_fetch_date", sms.getFetchDate());
-//        cv.put("sms_fetch_status", sms.getFetchStatus());
-//
-//        long rowId = db.insert(DatabaseHelper.dbTableName, null, cv);
-//        return (rowId == -1);
-//    }
 
 
 }
