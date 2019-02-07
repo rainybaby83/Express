@@ -1,4 +1,4 @@
-package com.express;
+package com.express.adapter;
 
 
 import android.annotation.SuppressLint;
@@ -11,13 +11,16 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.express.entity.SmsEntity;
+import com.express.R;
+
 import java.util.List;
 
-public class SmsDoneAdapter extends ArrayAdapter<SmsData> {
+public class SmsDoneAdapter extends ArrayAdapter<SmsEntity> {
 
     private int resourceId;
 
-    SmsDoneAdapter(@NonNull Context context, int resource, @NonNull List<SmsData> objects) {
+    public SmsDoneAdapter(@NonNull Context context, int resource, @NonNull List<SmsEntity> objects) {
         super(context, resource, objects);
         resourceId = resource;
     }
@@ -38,15 +41,15 @@ public class SmsDoneAdapter extends ArrayAdapter<SmsData> {
         TextView txtSmsFetchDateLabel = itemView.findViewById(R.id.labelFetchDate);
         TextView txtSmsFetchDate = itemView.findViewById(R.id.itemFetchDate);
 
-        SmsData smsData = this.getItem(position);//获取短信对象
-        if (smsData != null) {
-            txtDate.setText(smsData.getSmsDate());
-            txtPosition.setText(smsData.getPosition());
-            txtCode.setText(smsData.getCode());
-            txtPhone.setText(smsData.getPhone());
-            txtSmsID.setText(smsData.getSmsID());
-            txtSmsFetchDateLabel.setText("已取件: ");
-            txtSmsFetchDate.setText(smsData.getFetchDate());
+        SmsEntity smsEntity = this.getItem(position);//获取短信对象
+        if (smsEntity != null) {
+            txtDate.setText(smsEntity.getSmsDate());
+            txtPosition.setText(smsEntity.getPosition());
+            txtCode.setText(smsEntity.getCode());
+            txtPhone.setText(smsEntity.getPhone());
+            txtSmsID.setText(smsEntity.getSmsID());
+            txtSmsFetchDateLabel.setText("取件时间: ");
+            txtSmsFetchDate.setText(smsEntity.getFetchDate());
         }
 
         return itemView;

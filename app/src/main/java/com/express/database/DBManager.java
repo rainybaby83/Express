@@ -1,10 +1,15 @@
-package com.express;
+package com.express.database;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.icu.text.SimpleDateFormat;
+
+import com.express.Const;
+import com.express.entity.RulesEntity;
+import com.express.entity.SmsEntity;
+import com.express.activity.MainActivity;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -14,9 +19,15 @@ public class DBManager {
     private static  DatabaseHelper databaseHelper = new DatabaseHelper(MainActivity.getInstance());
     private static SQLiteDatabase db = databaseHelper.getWritableDatabase();
 
+    static final String TABLE_SMS = "SMS";
+    static final String TABLE_PARAM = "param";
+    static final String TABLE_RULES = "rules";
+    static final String COL_NAME_KEYWORD = "keyword";
+    static final String COL_NAME_LEFT = "code_left";
+    static final String COL_NAME_RIGHT = "code_right";
 
-    //对比之后，往数据里写短信
-    static boolean insertSms(SmsData sms) {
+    //往数据里写短信
+    public static boolean insertSms(SmsEntity sms) {
         ContentValues cv = new ContentValues();
         cv.put("sms_id", sms.getSmsID());
         cv.put("sms_date", sms.getSmsDate());
@@ -26,18 +37,30 @@ public class DBManager {
         cv.put("sms_fetch_date", sms.getFetchDate());
         cv.put("sms_fetch_status", sms.getFetchStatus());
 
-        long rowId = db.insert(DatabaseHelper.dbTableName, null, cv);
+        long rowId = db.insert(TABLE_SMS, null, cv);
         return (rowId == -1);
     }
 
 
+
+    //往数据里写短信
+    public static boolean insertRule(RulesEntity rulesEntity) {
+        ContentValues cv = new ContentValues();
+        cv.put(COL_NAME_KEYWORD, rulesEntity.getKeyword());
+        cv.put(COL_NAME_LEFT, rulesEntity.getCodeLeft());
+        cv.put(COL_NAME_RIGHT, rulesEntity.getCodeRight());
+
+        long rowId = db.insert(TABLE_SMS, null, cv);
+        return (rowId == -1);
+    }
+
     //从本地数据库抓短信，返回list，展示在fragment
-    static List<SmsData> getSmsFromDB(String fetchStatus) {
-        Cursor cur = db.query(DatabaseHelper.dbTableName, new String[]{"sms_id,sms_date,sms_code,sms_phone,sms_position,sms_fetch_date"},
+    public static List<SmsEntity> getSmsFromDB(String fetchStatus) {
+        Cursor cur = db.query(TABLE_SMS, new String[]{"sms_id,sms_date,sms_code,sms_phone,sms_position,sms_fetch_date"},
                 "sms_fetch_status = ?", new String[]{fetchStatus}, null, null, "sms_position,sms_date desc");
-        List<SmsData> mItem = new ArrayList<>();
+        List<SmsEntity> mItem = new ArrayList<>();
         if (cur.moveToFirst()) {
-            SmsData tmpSms = null;
+            SmsEntity tmpSms = null;
             int indexSmsID = cur.getColumnIndex("sms_id");
             int indexSmsDate = cur.getColumnIndex("sms_date");
             int indexCode = cur.getColumnIndex("sms_code");
@@ -52,7 +75,7 @@ public class DBManager {
                 String position = cur.getString(indexPosition);
                 String fetchDate = cur.getString(indexFetchDate);
 
-                tmpSms = new SmsData(smsID, smsDate, code, phone, position, fetchDate, fetchStatus);
+                tmpSms = new SmsEntity(smsID, smsDate, code, phone, position, fetchDate, fetchStatus);
 
                 mItem.add(tmpSms);
             } while (cur.moveToNext());
@@ -65,12 +88,17 @@ public class DBManager {
     }
 
 
-    //逐条，将手机短信与本地数据库对比。返回boolean
-    static boolean existInDatabase(String smsID) {
-        @SuppressLint("Recycle") Cursor cur = db.query(true, DatabaseHelper.dbTableName, new String[]{"sms_id"},
+    /**
+     * 按手机短信ID对比本地数据库，查找是否存在
+     * @param smsID 要对比的短信ID
+     * @return true false
+     */
+    public static boolean existInDatabase(String smsID) {
+        @SuppressLint("Recycle") Cursor cur = db.query(true, TABLE_SMS, new String[]{"sms_id"},
                 "sms_id = ?", new String[]{smsID}, null, null, "sms_id desc", "1");
         return cur.moveToFirst();
     }
+
 
     //同步本地数据到服务器。返回boolean
     public static boolean syncDB() {
@@ -83,7 +111,7 @@ public class DBManager {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Long dateLong = null;
 
-        @SuppressLint("Recycle") Cursor cur = db.query(true, DatabaseHelper.dbParamTableName, new String[]{"download_date"},
+        @SuppressLint("Recycle") Cursor cur = db.query(true, TABLE_PARAM, new String[]{"download_date"},
                 null, null, null, null, null, "1");
         if (cur.moveToFirst()) {
             strDate = cur.getString(cur.getColumnIndex("download_date"));
@@ -96,12 +124,12 @@ public class DBManager {
         return dateLong.toString();
     }
 
-    static boolean updateFetch(String smsID, String fetchDate) {
+    public static boolean updateFetch(String smsID, String fetchDate) {
         if (smsID != null) {
             ContentValues cv = new ContentValues();
-            cv.put("sms_fetch_status","已取");
+            cv.put("sms_fetch_status", Const.FECTH_STATE_DONE);
             cv.put("sms_fetch_date",fetchDate);
-            int returnValue = db.update(DatabaseHelper.dbTableName, cv, "sms_id = " + smsID, null);
+            int returnValue = db.update(TABLE_SMS, cv, "sms_id = " + smsID, null);
             if (returnValue == -1) {
                 return false;
             }

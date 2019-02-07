@@ -1,4 +1,4 @@
-package com.express;
+package com.express.activity;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -8,6 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.express.R;
+import com.express.adapter.SmsDoneAdapter;
+import com.express.entity.SmsEntity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +20,9 @@ public class FragmentDone extends ListFragment {
     Context mContext;
 
     public FragmentDone() {
-        List<SmsData> mSmsList = new ArrayList<>();
+        List<SmsEntity> mSmsList = new ArrayList<>();
         mContext=MainActivity.getInstance();
-        mAdapter = new SmsDoneAdapter(mContext,R.layout.list_item_done,mSmsList);
+        mAdapter = new SmsDoneAdapter(mContext, R.layout.list_item_done,mSmsList);
         this.setListAdapter(mAdapter);
 
     }
@@ -35,7 +39,7 @@ public class FragmentDone extends ListFragment {
 
     }
 
-    public void refresh(List<SmsData> mList) {
+    public void refresh(List<SmsEntity> mList) {
         mAdapter.clear();
         mAdapter.addAll(mList);
         this.setListAdapter(mAdapter);

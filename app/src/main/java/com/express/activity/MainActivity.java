@@ -1,9 +1,10 @@
-package com.express;
+package com.express.activity;
 
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 
 import android.net.Uri;
@@ -12,14 +13,21 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
+
+import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.LinearLayout;
+import android.widget.Toast;
+
+import com.express.Const;
+import com.express.database.DBManager;
+import com.express.R;
+import com.express.entity.SmsEntity;
 
 import org.apache.commons.lang3.StringUtils;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -31,6 +39,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     private FragmentFetch fragmentFetch;
     private FragmentDone fragmentDone;
     private static MainActivity mInstance;
+    public Toolbar mToolbar;
 
     @SuppressLint({"HardwareIds", "MissingPermission"})
     @Override
@@ -38,14 +47,17 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+        mToolbar = findViewById(R.id.toolbar);
+
         //设置短信权限
         String[] permissions = new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.RECEIVE_SMS, Manifest.permission.REQUEST_INSTALL_PACKAGES};
         ActivityCompat.requestPermissions(this, permissions, 2);
         mInstance = this;
+        initToolbar();
         this.appInit();//初始化控件
 
-        boolean tmp  = checkFromPhoneAndInsert();
+        boolean tmp = checkFromPhoneAndInsert();
         this.selectTab(0);
     }
 
@@ -61,13 +73,36 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.layoutFetch:
-
                 selectTab(0);
                 break;
             case R.id.layoutDone:
                 selectTab(1);
                 break;
+            default:
         }
+    }
+
+
+    private void initToolbar() {
+        //设置menu
+        mToolbar.inflateMenu(R.menu.menu);
+        //设置menu的点击事件
+        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int menuItemId = item.getItemId();
+                if (menuItemId == R.id.menu_rules) {
+                    Intent i = new Intent(MainActivity.this , RulesActivity.class);
+                    startActivity(i);
+                    Toast.makeText(MainActivity.this, " 规则", Toast.LENGTH_SHORT).show();
+
+                } else if (menuItemId == R.id.menu_web) {
+                    Toast.makeText(MainActivity.this, "网络", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            }
+        });
+
     }
 
 
@@ -105,7 +140,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                     //如果微信对应的Fragment已经实例化，则直接显示出来
                     transaction.show(fragmentFetch);
                 }
-                fragmentFetch.refresh(DBManager.getSmsFromDB("未取"));
+                fragmentFetch.refresh(DBManager.getSmsFromDB(Const.FECTH_STATE_NOT_DONE));
                 break;
             case 1:
                 if (fragmentDone == null) {
@@ -114,7 +149,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 } else {
                     transaction.show(fragmentDone);
                 }
-                fragmentDone.refresh(DBManager.getSmsFromDB("已取"));
+                fragmentDone.refresh(DBManager.getSmsFromDB(Const.FECTH_STATE_DONE));
                 break;
             default:
                 break;
@@ -158,7 +193,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
                 do {
                     String longBody = cur.getString(indexBody);
-                    SmsData tmpSms;
+                    SmsEntity tmpSms;
                     long longDate = cur.getLong(indexDate);
                     String smsID = String.valueOf(longDate);
                     String strDate = dateFormat.format(new Date(longDate));
@@ -174,7 +209,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                             position = "日日顺";
                             strCode = StringUtils.substringBetween(longBody, "凭取件码", "到明珠西苑");
                         }
-                        tmpSms = new SmsData(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, "未取");
+                        tmpSms = new SmsEntity(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, Const.FECTH_STATE_NOT_DONE);
                         boolean a = DBManager.insertSms(tmpSms);
                     }
                 } while (cur.moveToNext());

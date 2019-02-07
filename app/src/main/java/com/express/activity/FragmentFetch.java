@@ -1,4 +1,4 @@
-package com.express;
+package com.express.activity;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -7,6 +7,10 @@ import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.express.R;
+import com.express.entity.SmsEntity;
+import com.express.adapter.SmsFetchAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +21,10 @@ public class FragmentFetch extends ListFragment {
     Context mContext;
 
     public FragmentFetch() {
-        List<SmsData> mSmsList = new ArrayList<>();
+        List<SmsEntity> mSmsList = new ArrayList<>();
         mContext=MainActivity.getInstance();
-        mAdapter = new SmsFetchAdapter(mContext,R.layout.list_item_fecth,mSmsList);
+        mAdapter = new SmsFetchAdapter(mContext, R.layout.list_item_fecth,mSmsList);
         this.setListAdapter(mAdapter);
-
     }
 
     @Nullable
@@ -33,10 +36,9 @@ public class FragmentFetch extends ListFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
-    public void refresh(List<SmsData> mList) {
+    public void refresh(List<SmsEntity> mList) {
         mAdapter.clear();
         mAdapter.addAll(mList);
         this.setListAdapter(mAdapter);

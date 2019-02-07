@@ -1,4 +1,4 @@
-package com.express;
+package com.express.adapter;
 
 
 import android.annotation.SuppressLint;
@@ -16,15 +16,19 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.express.database.DBManager;
+import com.express.entity.SmsEntity;
+import com.express.R;
+
 import java.util.Date;
 import java.util.List;
 
-public class SmsFetchAdapter extends ArrayAdapter<SmsData> {
+public class SmsFetchAdapter extends ArrayAdapter<SmsEntity> {
 
     private int resourceId;
     public Button btnFetch;
 
-    SmsFetchAdapter(@NonNull Context context, int resource, @NonNull List<SmsData> objects) {
+    public SmsFetchAdapter(@NonNull Context context, int resource, @NonNull List<SmsEntity> objects) {
         super(context, resource, objects);
         resourceId = resource;
 
@@ -45,20 +49,20 @@ public class SmsFetchAdapter extends ArrayAdapter<SmsData> {
         TextView txtPhone = itemView.findViewById(R.id.itemPhone);
         TextView txtSmsID = itemView.findViewById(R.id.itemSmsID);
 
-        SmsData smsData = this.getItem(position);//获取短信对象
-        if (smsData != null) {
-            txtDate.setText(smsData.getSmsDate());
-            txtPosition.setText(smsData.getPosition());
-            txtCode.setText(smsData.getCode());
-            txtPhone.setText(smsData.getPhone());
-            txtSmsID.setText(smsData.getSmsID());
+        SmsEntity smsEntity = this.getItem(position);//获取短信对象
+        if (smsEntity != null) {
+            txtDate.setText(smsEntity.getSmsDate());
+            txtPosition.setText(smsEntity.getPosition());
+            txtCode.setText(smsEntity.getCode());
+            txtPhone.setText(smsEntity.getPhone());
+            txtSmsID.setText(smsEntity.getSmsID());
         }
 
         btnFetch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View vButton) {
                 if (vButton.getVisibility() == Button.VISIBLE) {
-                    SmsData temp = getItem((Integer) itemView.getTag());
+                    SmsEntity temp = getItem((Integer) itemView.getTag());
                     SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd HH:mm");
                     String strDate = dateFormat.format(new Date());
 
