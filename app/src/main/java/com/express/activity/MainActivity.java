@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
@@ -57,14 +58,21 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         this.initToolbar();
         this.appInit();//初始化控件
 
-        boolean tmp = checkFromPhoneAndInsert();
-        this.selectTab(0);
+//        checkFromPhoneAndInsert();
+//        this.selectTab(0);
     }
 
 
     //获取Activity实例
     public static MainActivity getInstance() {
         return mInstance;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        checkFromPhoneAndInsert();
+        this.selectTab(0);
     }
 
 
@@ -175,63 +183,65 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     /**
      * 从手机抓短信，对比本地数据库，把数据库不存在的短信，插入进去
      */
-    public static boolean checkFromPhoneAndInsert() {
+    public static void checkFromPhoneAndInsert() {
         List<RulesEntity> rules = DBManager.getRules();
         if (rules.size() > 0) {
-            StringBuilder where = null;
+            StringBuilder where = new StringBuilder();
             String[] args = new String[rules.size()];
+            int i = 0;
+
+            //如果用'%?%'的形式，会出错。必须把单引号放到args里
             for (RulesEntity rule:rules ) {
-                where.append(" body like '%?%' OR ");
-                args[rules.indexOf(rule)] = rule.getKeyword();
-
+                where.append(" body like ? OR ");
+                args[i] = "%" + rule.getKeyword() + "%";
+                i++;
             }
-            where.append("1=0").toString();
+            where.append("1=0");
 
-            try {
-                Uri uri = Uri.parse("content://sms/");
-                String[] columns = new String[]{"body", "date"};
-//                where = new StringBuilder("(body like '%?%'  OR  body like '%?%'  OR  body like '%?%')");
-//            String[] args = new String[]{"馒头房","丰巢","日日顺"};
-                Cursor cur = MainActivity.getInstance().getContentResolver().query(uri, columns, where.toString(), args, "date desc"); // 获取手机内部短信
+            Uri uri = Uri.parse("content://sms/");
+            String[] columns = new String[]{"body", "date"};
+            // 获取手机内部短信
+            Cursor cur = MainActivity.getInstance().getContentResolver().query
+                    (uri, columns, where.toString(), args, "date desc");
 
-                if (cur != null && cur.moveToFirst()) {
-                    int indexBody = cur.getColumnIndex("body");
-                    int indexDate = cur.getColumnIndex("date");
-                    String strCode = null;
-                    String position = null;
-                    @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd");
+            if (cur != null && cur.moveToFirst()) {
+                int indexBody = cur.getColumnIndex("body");
+                int indexDate = cur.getColumnIndex("date");
+                String strCode = null;
+                String position = null;
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd");
 
-                    do {
-                        String longBody = cur.getString(indexBody);
-                        SmsEntity tmpSms;
-                        long longDate = cur.getLong(indexDate);
-                        String smsID = String.valueOf(longDate);
-                        String strDate = dateFormat.format(new Date(longDate));
+                do {
+                    String longBody = cur.getString(indexBody);
+                    SmsEntity tmpSms;
+                    long longDate = cur.getLong(indexDate);
+                    String smsID = String.valueOf(longDate);
+                    String strDate = dateFormat.format(new Date(longDate));
 
-                        if (!DBManager.existInDatabase(smsID)) {
-                            if (longBody.contains("馒头房")) {
-                                position = "馒头房";
-                                strCode = StringUtils.substringBetween(longBody, "提货码", "来取");
-                            } else if (longBody.contains("丰巢")) {
-                                position = "丰巢";
-                                strCode = StringUtils.substringBetween(longBody, "请凭取件码『", "』前往明珠西苑");
-                            } else if (longBody.contains("日日顺")) {
-                                position = "日日顺";
-                                strCode = StringUtils.substringBetween(longBody, "凭取件码", "到明珠西苑");
+                    if (!DBManager.existInDatabase(smsID)) {
+                        for (RulesEntity rule : rules) {
+                            if (longBody.contains(rule.getKeyword())) {
+                                position = rule.getKeyword();
+                                strCode = StringUtils.substringBetween(longBody, rule.getCodeLeft(), rule.getCodeRight());
                             }
+//                            position = "馒头房"; "提货码", "来取");
+//                            position = "丰巢" "请凭取件码『", "』前往明珠西苑");
+//                            position = "日日顺""凭取件码", "到明珠西苑");
+                        }
+
+                        //如果取到的验证码不为空，则写入数据库
+                        if (strCode != null) {
                             tmpSms = new SmsEntity(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, Const.FECTH_STATE_NOT_DONE);
                             DBManager.insertSms(tmpSms);
                         }
-                    } while (cur.moveToNext());
 
-                    if (!cur.isClosed()) {
-                        cur.close();
                     }
-                    return true;
+                } while (cur.moveToNext());
+
+                if (!cur.isClosed()) {
+                    cur.close();
                 }
-            } catch (Exception ignored) {
             }
-            return false;
         }
 
     }

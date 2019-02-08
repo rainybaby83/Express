@@ -37,7 +37,7 @@
                     android:id="@+id/itemDate"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="55"
+                    android:layout_weight="40"
                     android:gravity="left|center_vertical"
                     android:text="1-27"
                     android:textColor="@android:color/black" />
@@ -46,17 +46,17 @@
                     android:id="@+id/itemPosition"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="60"
-                    android:gravity="center_vertical"
+                    android:layout_weight="50"
+                    android:gravity="left|center_vertical"
                     android:textColor="@android:color/black"
                     tools:text="日日顺" />
 
                 <TextView
                     android:id="@+id/itemCode"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="80"
-                    android:gravity="center_vertical"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="90"
+                    android:gravity="left|center_vertical"
                     android:textColor="@color/blue"
                     tools:text="12345678" />
 
@@ -65,7 +65,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_margin="0dp"
-                    android:layout_weight="50"
+                    android:layout_weight="40"
                     android:gravity="center_horizontal|center_vertical"
                     android:textColor="@android:color/black"
                     tools:text="手机" />
@@ -107,7 +107,7 @@
         <Space
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="20" />
+            android:layout_weight="10" />
 
         <Button
             android:id="@+id/btnFetch"

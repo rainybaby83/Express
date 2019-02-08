@@ -75,6 +75,7 @@ public class CreateRulesDialog extends Dialog {
                         CreateRulesDialog.super.dismiss();
                         //刷新页面列表
                         mContext.refresh();
+
                     } else {
                         Toast.makeText(mContext, "添加失败", Toast.LENGTH_SHORT).show();
                     }

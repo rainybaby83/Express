@@ -73,8 +73,8 @@ public class RulesActivity extends ListActivity {
 
 
     //获取Activity实例
-    public static RulesActivity getInstance() {
-        return mInstance;
-    }
+//    public static RulesActivity getInstance() {
+//        return mInstance;
+//    }
 
 }
