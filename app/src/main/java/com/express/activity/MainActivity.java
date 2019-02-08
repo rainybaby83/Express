@@ -25,17 +25,17 @@ import android.widget.Toast;
 import com.express.Const;
 import com.express.database.DBManager;
 import com.express.R;
+import com.express.entity.RulesEntity;
 import com.express.entity.SmsEntity;
 
 import org.apache.commons.lang3.StringUtils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
     public String mTelNum;
-
-    //Tab分别对应的Fragment
     private FragmentFetch fragmentFetch;
     private FragmentDone fragmentDone;
     private static MainActivity mInstance;
@@ -47,14 +47,14 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        mToolbar = findViewById(R.id.toolbar);
+
 
         //设置短信权限
         String[] permissions = new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.RECEIVE_SMS, Manifest.permission.REQUEST_INSTALL_PACKAGES};
         ActivityCompat.requestPermissions(this, permissions, 2);
         mInstance = this;
-        initToolbar();
+        this.initToolbar();
         this.appInit();//初始化控件
 
         boolean tmp = checkFromPhoneAndInsert();
@@ -84,8 +84,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 
     private void initToolbar() {
+
+        mToolbar = findViewById(R.id.toolbar);
         //设置menu
-        mToolbar.inflateMenu(R.menu.menu);
+        mToolbar.inflateMenu(R.menu.menu_main_activity);
         //设置menu的点击事件
         mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
@@ -94,8 +96,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 if (menuItemId == R.id.menu_rules) {
                     Intent i = new Intent(MainActivity.this , RulesActivity.class);
                     startActivity(i);
-                    Toast.makeText(MainActivity.this, " 规则", Toast.LENGTH_SHORT).show();
-
                 } else if (menuItemId == R.id.menu_web) {
                     Toast.makeText(MainActivity.this, "网络", Toast.LENGTH_SHORT).show();
                 }
@@ -172,56 +172,68 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 
 
-
     /**
      * 从手机抓短信，对比本地数据库，把数据库不存在的短信，插入进去
      */
     public static boolean checkFromPhoneAndInsert() {
-        try {
-            Uri uri = Uri.parse("content://sms/");
-            String[] columns = new String[]{"body", "date"};
-            String where = "(body like '%馒头房%'  OR  body like '%丰巢%'  OR  body like '%日日顺%')";
-//            String[] args = new String[]{"馒头房","丰巢","日日顺"};
-            Cursor cur = MainActivity.getInstance().getContentResolver().query(uri, columns, where, null, "date desc"); // 获取手机内部短信
+        List<RulesEntity> rules = DBManager.getRules();
+        if (rules.size() > 0) {
+            StringBuilder where = null;
+            String[] args = new String[rules.size()];
+            for (RulesEntity rule:rules ) {
+                where.append(" body like '%?%' OR ");
+                args[rules.indexOf(rule)] = rule.getKeyword();
 
-            if (cur != null && cur.moveToFirst()) {
-                int indexBody = cur.getColumnIndex("body");
-                int indexDate = cur.getColumnIndex("date");
-                String strCode = null;
-                String position = null;
-                @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd");
-
-                do {
-                    String longBody = cur.getString(indexBody);
-                    SmsEntity tmpSms;
-                    long longDate = cur.getLong(indexDate);
-                    String smsID = String.valueOf(longDate);
-                    String strDate = dateFormat.format(new Date(longDate));
-
-                    if (!DBManager.existInDatabase(smsID)) {
-                        if (longBody.contains("馒头房")) {
-                            position = "馒头房";
-                            strCode = StringUtils.substringBetween(longBody, "提货码", "来取");
-                        } else if (longBody.contains("丰巢")) {
-                            position = "丰巢";
-                            strCode = StringUtils.substringBetween(longBody, "请凭取件码『", "』前往明珠西苑");
-                        } else if (longBody.contains("日日顺")) {
-                            position = "日日顺";
-                            strCode = StringUtils.substringBetween(longBody, "凭取件码", "到明珠西苑");
-                        }
-                        tmpSms = new SmsEntity(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, Const.FECTH_STATE_NOT_DONE);
-                        boolean a = DBManager.insertSms(tmpSms);
-                    }
-                } while (cur.moveToNext());
-
-                if (!cur.isClosed()) {
-                    cur.close();
-                }
-                return true;
             }
-        } catch (Exception ignored) {
+            where.append("1=0").toString();
+
+            try {
+                Uri uri = Uri.parse("content://sms/");
+                String[] columns = new String[]{"body", "date"};
+//                where = new StringBuilder("(body like '%?%'  OR  body like '%?%'  OR  body like '%?%')");
+//            String[] args = new String[]{"馒头房","丰巢","日日顺"};
+                Cursor cur = MainActivity.getInstance().getContentResolver().query(uri, columns, where.toString(), args, "date desc"); // 获取手机内部短信
+
+                if (cur != null && cur.moveToFirst()) {
+                    int indexBody = cur.getColumnIndex("body");
+                    int indexDate = cur.getColumnIndex("date");
+                    String strCode = null;
+                    String position = null;
+                    @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd");
+
+                    do {
+                        String longBody = cur.getString(indexBody);
+                        SmsEntity tmpSms;
+                        long longDate = cur.getLong(indexDate);
+                        String smsID = String.valueOf(longDate);
+                        String strDate = dateFormat.format(new Date(longDate));
+
+                        if (!DBManager.existInDatabase(smsID)) {
+                            if (longBody.contains("馒头房")) {
+                                position = "馒头房";
+                                strCode = StringUtils.substringBetween(longBody, "提货码", "来取");
+                            } else if (longBody.contains("丰巢")) {
+                                position = "丰巢";
+                                strCode = StringUtils.substringBetween(longBody, "请凭取件码『", "』前往明珠西苑");
+                            } else if (longBody.contains("日日顺")) {
+                                position = "日日顺";
+                                strCode = StringUtils.substringBetween(longBody, "凭取件码", "到明珠西苑");
+                            }
+                            tmpSms = new SmsEntity(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, Const.FECTH_STATE_NOT_DONE);
+                            DBManager.insertSms(tmpSms);
+                        }
+                    } while (cur.moveToNext());
+
+                    if (!cur.isClosed()) {
+                        cur.close();
+                    }
+                    return true;
+                }
+            } catch (Exception ignored) {
+            }
+            return false;
         }
-        return false;
+
     }
 
 

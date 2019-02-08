@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <EditText
+        android:id="@+id/txtKeyword"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="短信关键词"
+        android:minHeight="45dp"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/txtCodeLeft"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:hint="验证码左侧"
+        android:minHeight="45dp"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/txtCodeRight"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:gravity="top|left"
+        android:hint="验证码右侧"
+        android:minHeight="45dp"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/btn_save"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/btn_style"
+        android:text="保存"
+        android:textColor="@color/white"
+        android:textSize="18sp" />
+
+</LinearLayout>

@@ -38,7 +38,7 @@
                     android:id="@+id/labelKeyword"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="40"
+                    android:layout_weight="60"
                     android:gravity="left"
                     android:text="短信关键词："
                     android:textColor="@color/black"
@@ -68,7 +68,7 @@
                     android:id="@+id/labelLeft"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="40"
+                    android:layout_weight="60"
                     android:gravity="left"
                     android:text="验证码左侧："
                     android:textColor="@android:color/black"
@@ -98,7 +98,7 @@
                     android:id="@+id/labelRight"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="40"
+                    android:layout_weight="60"
                     android:gravity="left"
                     android:text="验证码右侧："
                     android:textColor="@color/black"
@@ -125,13 +125,13 @@
             android:layout_weight="10" />
 
         <Button
-            android:id="@+id/btnEdit"
+            android:id="@+id/btnDelRule"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginRight="10dp"
             android:layout_weight="50"
             android:background="@drawable/btn_style"
-            android:text="编辑"
+            android:text="删除"
             android:textColor="#fff" />
 
     </LinearLayout>

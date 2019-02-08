@@ -21,6 +21,7 @@ public class FragmentFetch extends ListFragment {
     Context mContext;
 
     public FragmentFetch() {
+        //代码若换到onCreate()，启动后会白屏
         List<SmsEntity> mSmsList = new ArrayList<>();
         mContext=MainActivity.getInstance();
         mAdapter = new SmsFetchAdapter(mContext, R.layout.list_item_fecth,mSmsList);

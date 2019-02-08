@@ -24,14 +24,11 @@ import java.util.Date;
 import java.util.List;
 
 public class SmsFetchAdapter extends ArrayAdapter<SmsEntity> {
-
     private int resourceId;
-    public Button btnFetch;
 
     public SmsFetchAdapter(@NonNull Context context, int resource, @NonNull List<SmsEntity> objects) {
         super(context, resource, objects);
         resourceId = resource;
-
     }
 
 
@@ -40,7 +37,7 @@ public class SmsFetchAdapter extends ArrayAdapter<SmsEntity> {
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
         @SuppressLint("ViewHolder") final View itemView = LayoutInflater.from(getContext()).inflate(resourceId,null);
-        btnFetch = itemView.findViewById(R.id.btnFetch);
+        Button btnFetch = itemView.findViewById(R.id.btnFetch);
         itemView.setTag(position);
 
         TextView txtDate = itemView.findViewById(R.id.itemDate);
@@ -62,12 +59,12 @@ public class SmsFetchAdapter extends ArrayAdapter<SmsEntity> {
             @Override
             public void onClick(View vButton) {
                 if (vButton.getVisibility() == Button.VISIBLE) {
-                    SmsEntity temp = getItem((Integer) itemView.getTag());
+                    SmsEntity selectedSmsEntity = getItem((Integer) itemView.getTag());
                     SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd HH:mm");
                     String strDate = dateFormat.format(new Date());
 
-                    if (temp != null) {
-                        boolean returnValue = DBManager.updateFetch(temp.getSmsID(), strDate);
+                    if (selectedSmsEntity != null) {
+                        boolean returnValue = DBManager.updateFetch(selectedSmsEntity.getSmsID(), strDate);
                         if (returnValue) {
                             vButton.setVisibility(Button.INVISIBLE);
                             //划掉验证码

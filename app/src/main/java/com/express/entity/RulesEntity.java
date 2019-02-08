@@ -8,7 +8,7 @@ public class RulesEntity {
     private String codeRight;
 
 
-    RulesEntity(String keyword, String left, String right) {
+    public RulesEntity(String keyword, String left, String right) {
         this.keyword = keyword;
         this.codeLeft = left;
         this.codeRight = right;

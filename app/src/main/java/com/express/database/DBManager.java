@@ -22,9 +22,14 @@ public class DBManager {
     static final String TABLE_SMS = "SMS";
     static final String TABLE_PARAM = "param";
     static final String TABLE_RULES = "rules";
-    static final String COL_NAME_KEYWORD = "keyword";
-    static final String COL_NAME_LEFT = "code_left";
-    static final String COL_NAME_RIGHT = "code_right";
+    static final String COL_RULES_ID = "id";
+    static final String COL_RULES_KEYWORD = "keyword";
+    static final String COL_RULES_LEFT = "code_left";
+    static final String COL_RULES_RIGHT = "code_right";
+    static final String ROW_PARAM_APP_MODE = "app_mode";
+    static final String ROW_PARAM_DB_URL = "db_url";
+    static final String ROW_PARAM_UP_DATE = "up_date";
+    static final String ROW_PARAM_DOWN_DATE = "down_date";
 
     //往数据里写短信
     public static boolean insertSms(SmsEntity sms) {
@@ -38,23 +43,47 @@ public class DBManager {
         cv.put("sms_fetch_status", sms.getFetchStatus());
 
         long rowId = db.insert(TABLE_SMS, null, cv);
-        return (rowId == -1);
+        return (rowId != -1);
     }
 
 
 
-    //往数据里写短信
+    //往数据库里写规则
     public static boolean insertRule(RulesEntity rulesEntity) {
         ContentValues cv = new ContentValues();
-        cv.put(COL_NAME_KEYWORD, rulesEntity.getKeyword());
-        cv.put(COL_NAME_LEFT, rulesEntity.getCodeLeft());
-        cv.put(COL_NAME_RIGHT, rulesEntity.getCodeRight());
+        cv.put(COL_RULES_KEYWORD, rulesEntity.getKeyword());
+        cv.put(COL_RULES_LEFT, rulesEntity.getCodeLeft());
+        cv.put(COL_RULES_RIGHT, rulesEntity.getCodeRight());
 
         long rowId = db.insert(TABLE_SMS, null, cv);
-        return (rowId == -1);
+        return (rowId != -1);
     }
 
-    //从本地数据库抓短信，返回list，展示在fragment
+
+    //往数据库里写规则rule
+    public static boolean insertRule(String keyword, String codeLeft, String codeRight) {
+        ContentValues cv = new ContentValues();
+        cv.put(COL_RULES_KEYWORD, keyword);
+        cv.put(COL_RULES_LEFT, codeLeft);
+        cv.put(COL_RULES_RIGHT, codeRight);
+
+        long rowId = db.insert(TABLE_RULES, null, cv);
+        return (rowId != -1);
+    }
+
+
+    //从数据库里删除规则rule
+    public static boolean deleteRule(RulesEntity r) {
+        String where = new StringBuffer(COL_RULES_KEYWORD).append(" = ? AND ")
+                .append(COL_RULES_LEFT).append(" = ? AND ")
+                .append(COL_RULES_RIGHT).append(" = ? ").toString();
+        String[] values = new String[]{r.getKeyword(), r.getCodeLeft(), r.getCodeRight()};
+        long rowId = db.delete(TABLE_RULES, where, values);
+        return (rowId != -1);
+    }
+
+
+    //从本地数据库抓短信，返回List
     public static List<SmsEntity> getSmsFromDB(String fetchStatus) {
         Cursor cur = db.query(TABLE_SMS, new String[]{"sms_id,sms_date,sms_code,sms_phone,sms_position,sms_fetch_date"},
                 "sms_fetch_status = ?", new String[]{fetchStatus}, null, null, "sms_position,sms_date desc");
@@ -74,18 +103,44 @@ public class DBManager {
                 String phone = cur.getString(indexPhone);
                 String position = cur.getString(indexPosition);
                 String fetchDate = cur.getString(indexFetchDate);
-
                 tmpSms = new SmsEntity(smsID, smsDate, code, phone, position, fetchDate, fetchStatus);
-
                 mItem.add(tmpSms);
             } while (cur.moveToNext());
-
             if (!cur.isClosed()) {
                 cur.close();
             }
         }
         return mItem;
     }
+
+
+    //从本地数据库读取规则，返回List
+    public static List<RulesEntity> getRules() {
+        Cursor cur = db.query(TABLE_RULES, new String[]{COL_RULES_KEYWORD, COL_RULES_LEFT, COL_RULES_RIGHT},
+                null, null, null, null, null);
+
+        List<RulesEntity> mItem = new ArrayList<>();
+        if (cur.moveToFirst()) {
+            RulesEntity tmpRules = null;
+            int indexKeyword = cur.getColumnIndex(COL_RULES_KEYWORD);
+            int indexCodeLeft = cur.getColumnIndex(COL_RULES_LEFT);
+            int indexCodeRight = cur.getColumnIndex(COL_RULES_RIGHT);
+
+            do {
+                String strKeyword = cur.getString(indexKeyword);
+                String strCodeLeft = cur.getString(indexCodeLeft);
+                String strCodeRight = cur.getString(indexCodeRight);
+
+                tmpRules = new RulesEntity(strKeyword, strCodeLeft, strCodeRight);
+                mItem.add(tmpRules);
+            } while (cur.moveToNext());
+            if (!cur.isClosed()) {
+                cur.close();
+            }
+        }
+        return mItem;
+    }
+
 
 
     /**
@@ -104,6 +159,8 @@ public class DBManager {
     public static boolean syncDB() {
         return true;
     }
+
+
 
 
     public String getDownloadDate() {
