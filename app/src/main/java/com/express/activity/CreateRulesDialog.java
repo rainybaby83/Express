@@ -1,6 +1,5 @@
-package com.express;
+package com.express.activity;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -12,7 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.express.activity.RulesActivity;
+import com.express.R;
 import com.express.database.DBManager;
 
 import org.apache.commons.lang3.StringUtils;

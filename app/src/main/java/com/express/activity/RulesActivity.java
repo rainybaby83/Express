@@ -5,9 +5,10 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.EditText;
+import android.widget.MultiAutoCompleteTextView;
+import android.widget.TextView;
 
-import com.express.CreateRulesDialog;
 import com.express.R;
 import com.express.adapter.RulesAdapter;
 import com.express.database.DBManager;
@@ -20,11 +21,13 @@ public class RulesActivity extends ListActivity {
 
     private RulesAdapter mAdapter;
     private static RulesActivity mInstance;
+    private TextView mText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rules);
+        mText = findViewById(R.id.txt_example);
         mInstance = this;
         this.initToobar();
         this.initListView();
@@ -72,9 +75,9 @@ public class RulesActivity extends ListActivity {
     }
 
 
-    //获取Activity实例
-//    public static RulesActivity getInstance() {
-//        return mInstance;
-//    }
+//    获取Activity实例
+    public static RulesActivity getInstance() {
+        return mInstance;
+    }
 
 }

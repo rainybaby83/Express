@@ -11,13 +11,18 @@ import com.express.entity.RulesEntity;
 import com.express.entity.SmsEntity;
 import com.express.activity.MainActivity;
 
+import java.sql.Connection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DBManager {
+    public static String dbNetUrl;
     private static  DatabaseHelper databaseHelper = new DatabaseHelper(MainActivity.getInstance());
     private static SQLiteDatabase db = databaseHelper.getWritableDatabase();
+//    private static NetDatabaseHelper netDatabaseHelper = new NetDatabaseHelper();
+//    private  Connection conn = NetDatabaseHelper.getConn();
+
 
     static final String TABLE_SMS = "SMS";
     static final String TABLE_PARAM = "param";
@@ -28,8 +33,9 @@ public class DBManager {
     static final String COL_RULES_RIGHT = "code_right";
     static final String ROW_PARAM_APP_MODE = "app_mode";
     static final String ROW_PARAM_DB_URL = "db_url";
-    static final String ROW_PARAM_UP_DATE = "up_date";
-    static final String ROW_PARAM_DOWN_DATE = "down_date";
+//    static final String ROW_PARAM_UP_DATE = "up_date";
+    static final String ROW_PARAM_SYNCTIME = "sync_time";
+
 
     //往数据里写短信
     public static boolean insertSms(SmsEntity sms) {
@@ -47,26 +53,27 @@ public class DBManager {
     }
 
 
-
-    //往数据库里写规则
+    /**
+     * 往数据库里写规则
+     * @param rulesEntity 规则实体
+     * @return 是否插入成功
+     */
     public static boolean insertRule(RulesEntity rulesEntity) {
-        ContentValues cv = new ContentValues();
-        cv.put(COL_RULES_KEYWORD, rulesEntity.getKeyword());
-        cv.put(COL_RULES_LEFT, rulesEntity.getCodeLeft());
-        cv.put(COL_RULES_RIGHT, rulesEntity.getCodeRight());
-
-        long rowId = db.insert(TABLE_SMS, null, cv);
-        return (rowId != -1);
+        return (insertRule(rulesEntity.getKeyword(), rulesEntity.getCodeLeft(), rulesEntity.getCodeRight()));
     }
 
 
-    //往数据库里写规则rule
+    /**
+     * @param keyword 被拦截短信的关键字
+     * @param codeLeft 验证码左侧字符串
+     * @param codeRight 验证码右侧字符串
+     * @return 是否插入成功
+     */
     public static boolean insertRule(String keyword, String codeLeft, String codeRight) {
         ContentValues cv = new ContentValues();
         cv.put(COL_RULES_KEYWORD, keyword);
         cv.put(COL_RULES_LEFT, codeLeft);
         cv.put(COL_RULES_RIGHT, codeRight);
-
         long rowId = db.insert(TABLE_RULES, null, cv);
         return (rowId != -1);
     }
@@ -157,21 +164,39 @@ public class DBManager {
 
     //同步本地数据到服务器。返回boolean
     public static boolean syncDB() {
+        /*
+        同步数据库
+        →取得本机、服务器的同步时间，取最小值
+        →按最小值分别获取本机、服务器的短信list，调用对比方法
+        →本机有，服务器有，则对比状态。状态相同不做处理，状态不同，把“未取”改为“已取”
+        →本机有，服务器无，上传
+        →本机无，服务器有，下载
+        →更新本机和服务器的同步时间
+         */
+
+
+
         return true;
     }
 
+    public static String getAppMode() {
+        //获取运行模式
 
 
+        //默认单机模式
+        return Const.APP_MODE_SINGLE;
+    }
 
-    public String getDownloadDate() {
+
+    public String getSyncTime() {
         String strDate = "2019-1-1";
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Long dateLong = null;
 
-        @SuppressLint("Recycle") Cursor cur = db.query(true, TABLE_PARAM, new String[]{"download_date"},
+        @SuppressLint("Recycle") Cursor cur = db.query(true, TABLE_PARAM, new String[]{ROW_PARAM_SYNCTIME},
                 null, null, null, null, null, "1");
         if (cur.moveToFirst()) {
-            strDate = cur.getString(cur.getColumnIndex("download_date"));
+            strDate = cur.getString(cur.getColumnIndex(ROW_PARAM_SYNCTIME));
             try {
                 dateLong = sdf.parse(strDate).getTime();
             } catch (ParseException ignored) {

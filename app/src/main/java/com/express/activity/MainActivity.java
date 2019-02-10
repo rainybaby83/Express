@@ -41,40 +41,34 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     private FragmentDone fragmentDone;
     private static MainActivity mInstance;
     public Toolbar mToolbar;
+    public String mAppMode;
 
     @SuppressLint({"HardwareIds", "MissingPermission"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-
 
         //设置短信权限
         String[] permissions = new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.RECEIVE_SMS, Manifest.permission.REQUEST_INSTALL_PACKAGES};
         ActivityCompat.requestPermissions(this, permissions, 2);
         mInstance = this;
+//        this.initAppMode();
         this.initToolbar();
         this.appInit();//初始化控件
 
-//        checkFromPhoneAndInsert();
+//        checkPhoneAndInsert();
 //        this.selectTab(0);
     }
 
 
-    //获取Activity实例
-    public static MainActivity getInstance() {
-        return mInstance;
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
-        checkFromPhoneAndInsert();
+        this.checkPhoneAndInsert();//此时开始访问数据库
         this.selectTab(0);
     }
-
 
     //处理Tab的点击事件
     @Override
@@ -89,6 +83,26 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             default:
         }
     }
+
+
+    //获取Activity实例
+    public static MainActivity getInstance() {
+        return mInstance;
+    }
+
+
+
+    private void initAppMode() {
+        mAppMode = DBManager.getAppMode();
+        if (Objects.equals(mAppMode, Const.APP_MODE_NET)) {
+            //新建一个mysqlManager
+            DBManager.syncDB();
+        }
+    }
+
+
+
+
 
 
     private void initToolbar() {
@@ -136,7 +150,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         FragmentTransaction transaction = manager.beginTransaction();
         //先隐藏所有的Fragment
         hideFragments(transaction);
-//        checkFromPhoneAndInsert();
+
         switch (i) {
             //当选中点击的是微信的Tab时
             case 0:
@@ -179,19 +193,18 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     }
 
 
-
     /**
      * 从手机抓短信，对比本地数据库，把数据库不存在的短信，插入进去
      */
-    public static void checkFromPhoneAndInsert() {
+    public void checkPhoneAndInsert() {
         List<RulesEntity> rules = DBManager.getRules();
         if (rules.size() > 0) {
             StringBuilder where = new StringBuilder();
             String[] args = new String[rules.size()];
             int i = 0;
 
-            //如果用'%?%'的形式，会出错。必须把单引号放到args里
-            for (RulesEntity rule:rules ) {
+            //如果用'%?%'的形式，单引号会出错。使用args可以不用单引号
+            for (RulesEntity rule : rules) {
                 where.append(" body like ? OR ");
                 args[i] = "%" + rule.getKeyword() + "%";
                 i++;

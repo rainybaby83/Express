@@ -15,6 +15,18 @@
         app:title="短信抓取规则"
         app:titleTextColor="@color/white" />
 
+    <TextView
+        android:id="@+id/txt_example"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="10dp"
+        android:text="短信举例：\n      【快递超市】您的中通快递快件已到xxxx北区门头房馒头房隔壁，请凭提货码252603来取，有问题电话xxxxx "
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        android:textSize="15sp" />
+
     <ListView
         android:id="@id/android:list"
         android:layout_width="match_parent"
