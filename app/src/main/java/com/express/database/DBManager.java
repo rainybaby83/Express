@@ -20,8 +20,8 @@ public class DBManager {
     public static String dbNetUrl;
     private static  DatabaseHelper databaseHelper = new DatabaseHelper(MainActivity.getInstance());
     private static SQLiteDatabase db = databaseHelper.getWritableDatabase();
-//    private static NetDatabaseHelper netDatabaseHelper = new NetDatabaseHelper();
-//    private  Connection conn = NetDatabaseHelper.getConn();
+//    private static NetDB netDatabaseHelper = new NetDB();
+//    private  Connection conn = NetDB.getConn();
 
 
     static final String TABLE_SMS = "SMS";

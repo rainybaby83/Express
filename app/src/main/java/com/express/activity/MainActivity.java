@@ -8,6 +8,10 @@ import android.content.Intent;
 import android.database.Cursor;
 
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
+import android.os.StrictMode;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -25,6 +29,7 @@ import android.widget.Toast;
 import com.express.Const;
 import com.express.database.DBManager;
 import com.express.R;
+import com.express.database.NetDB;
 import com.express.entity.RulesEntity;
 import com.express.entity.SmsEntity;
 
@@ -34,6 +39,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import static java.lang.String.valueOf;
+
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
     public String mTelNum;
@@ -41,34 +48,74 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     private FragmentDone fragmentDone;
     private static MainActivity mInstance;
     public Toolbar mToolbar;
-    public String mAppMode;
+    public String mAppMode = Const.APP_MODE_NET;
+    public NetDB netDB= new NetDB();
 
     @SuppressLint({"HardwareIds", "MissingPermission"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectDiskReads().
+                detectDiskWrites().detectNetwork().penaltyLog().build());
 
         //设置短信权限
-        String[] permissions = new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.RECEIVE_SMS, Manifest.permission.REQUEST_INSTALL_PACKAGES};
+        String[] permissions = new String[]{Manifest.permission.READ_SMS,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.RECEIVE_SMS,
+                Manifest.permission.REQUEST_INSTALL_PACKAGES,
+                Manifest.permission.INTERNET};
         ActivityCompat.requestPermissions(this, permissions, 2);
         mInstance = this;
 //        this.initAppMode();
         this.initToolbar();
         this.appInit();//初始化控件
 
-//        checkPhoneAndInsert();
-//        this.selectTab(0);
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();
+        //放在这里可以保证返回该activity时刷新页面
         this.checkPhoneAndInsert();//此时开始访问数据库
         this.selectTab(0);
+
+        if (mAppMode==Const.APP_MODE_NET) {
+            new Thread(networkTask).start();
+        }
     }
+
+
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            Bundle data = msg.getData();
+            Boolean val = data.getBoolean("value");
+
+            // TODO
+            // UI界面的更新等相关操作
+        }
+    };
+
+
+    Runnable networkTask = new Runnable() {
+        @Override
+        public void run() {
+
+            boolean result = NetDB.getTest();
+//            Toast.makeText(MainActivity.this, String.valueOf(result), Toast.LENGTH_LONG).show();
+//            Message msg = new Message();
+//            Bundle data = new Bundle();
+//            data.putBoolean("value", result);
+//            msg.setData(data);
+//            handler.sendMessage(msg);
+        }
+    };
+
+
 
     //处理Tab的点击事件
     @Override
@@ -99,7 +146,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             DBManager.syncDB();
         }
     }
-
 
 
 
@@ -228,7 +274,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                     String longBody = cur.getString(indexBody);
                     SmsEntity tmpSms;
                     long longDate = cur.getLong(indexDate);
-                    String smsID = String.valueOf(longDate);
+                    String smsID = valueOf(longDate);
                     String strDate = dateFormat.format(new Date(longDate));
 
                     if (!DBManager.existInDatabase(smsID)) {
@@ -258,6 +304,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
 
     }
+
+
+
+
 
 
 }
