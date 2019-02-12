@@ -29,7 +29,7 @@ import android.widget.Toast;
 import com.express.Const;
 import com.express.database.DBManager;
 import com.express.R;
-import com.express.database.NetDbManager;
+import com.express.database.NetDBManager;
 import com.express.entity.RulesEntity;
 import com.express.entity.SmsEntity;
 
@@ -48,7 +48,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     private static MainActivity mInstance;
     public Toolbar mToolbar;
     public String mAppMode ;
-//    public NetDbManager netDB= new NetDbManager();
+//    public NetDBManager netDB= new NetDBManager();
 
     @SuppressLint({"HardwareIds", "MissingPermission"})
     @Override
@@ -138,8 +138,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         @Override
         public void run() {
             Boolean a=false;
-            if (NetDbManager.getConnectStatus()) {
-                a=NetDbManager.getDbExistStatus();
+            if (NetDBManager.getConnectStatus()) {
+                a= NetDBManager.getDbExistStatus();
             }
 
             Bundle data = new Bundle();

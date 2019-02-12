@@ -12,7 +12,7 @@ import java.sql.Statement;
 import static com.express.Const.APP_MODE_NET;
 import static com.express.Const.APP_MODE_SINGLE;
 
-public class NetDbManager {
+public class NetDBManager {
     private static String mDriver = "com.mysql.jdbc.Driver";
     private static String mUrl = "jdbc:mysql://rainybaby.mysql.rds.aliyuncs.com:3306/";//MYSQL数据库连接Url
     private static String mUser="root";

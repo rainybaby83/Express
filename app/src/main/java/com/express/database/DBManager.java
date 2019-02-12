@@ -20,8 +20,8 @@ public class DBManager {
     private static  DatabaseHelper databaseHelper = new DatabaseHelper(MainActivity.getInstance());
     private static SQLiteDatabase db = databaseHelper.getWritableDatabase();
     public final static String DB_NAME = "express";
-//    private static NetDbManager netDatabaseHelper = new NetDbManager();
-//    private  Connection conn = NetDbManager.getConn();
+//    private static NetDBManager netDatabaseHelper = new NetDBManager();
+//    private  Connection conn = NetDBManager.getConn();
 
 
     static final String TABLE_SMS = "SMS";
