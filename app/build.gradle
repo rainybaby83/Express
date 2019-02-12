@@ -1,18 +1,14 @@
 apply plugin: 'com.android.application'
-
 android {
     compileSdkVersion 28
     buildToolsVersion '28.0.3'
-
     defaultConfig {
+        targetSdkVersion 26
         applicationId "com.express"
         minSdkVersion 24
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
         javaCompileOptions {
             annotationProcessorOptions {
-                includeCompileClasspath = true    //解决注解报错
+                includeCompileClasspath = true //解决注解报错
             }
         }
     }
@@ -26,10 +22,11 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    testImplementation 'junit:junit:4.12'
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'org.apache.commons:commons-lang3:3.8.1'
     compileOnly 'org.projectlombok:lombok:1.18.4'
     implementation 'com.android.support:design:28.0.0'
+//noinspection GradleDependency
     implementation 'mysql:mysql-connector-java:5.1.47'
+    implementation 'com.android.support:gridlayout-v7:28.0.0'
 }

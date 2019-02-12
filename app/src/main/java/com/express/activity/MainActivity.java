@@ -3,12 +3,12 @@ package com.express.activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.os.StrictMode;
@@ -29,7 +29,7 @@ import android.widget.Toast;
 import com.express.Const;
 import com.express.database.DBManager;
 import com.express.R;
-import com.express.database.NetDB;
+import com.express.database.NetDbManager;
 import com.express.entity.RulesEntity;
 import com.express.entity.SmsEntity;
 
@@ -37,10 +37,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
+import static com.express.Const.APP_MODE_NET;
 import static java.lang.String.valueOf;
-
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
     public String mTelNum;
@@ -48,8 +47,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     private FragmentDone fragmentDone;
     private static MainActivity mInstance;
     public Toolbar mToolbar;
-    public String mAppMode = Const.APP_MODE_NET;
-    public NetDB netDB= new NetDB();
+    public String mAppMode ;
+//    public NetDbManager netDB= new NetDbManager();
 
     @SuppressLint({"HardwareIds", "MissingPermission"})
     @Override
@@ -67,7 +66,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 Manifest.permission.INTERNET};
         ActivityCompat.requestPermissions(this, permissions, 2);
         mInstance = this;
-//        this.initAppMode();
+        this.initAppMode();
         this.initToolbar();
         this.appInit();//初始化控件
 
@@ -81,39 +80,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         this.checkPhoneAndInsert();//此时开始访问数据库
         this.selectTab(0);
 
-        if (mAppMode==Const.APP_MODE_NET) {
-            new Thread(networkTask).start();
-        }
+
     }
 
 
 
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            Bundle data = msg.getData();
-            Boolean val = data.getBoolean("value");
-
-            // TODO
-            // UI界面的更新等相关操作
-        }
-    };
-
-
-    Runnable networkTask = new Runnable() {
-        @Override
-        public void run() {
-
-            boolean result = NetDB.getTest();
-//            Toast.makeText(MainActivity.this, String.valueOf(result), Toast.LENGTH_LONG).show();
-//            Message msg = new Message();
-//            Bundle data = new Bundle();
-//            data.putBoolean("value", result);
-//            msg.setData(data);
-//            handler.sendMessage(msg);
-        }
-    };
 
 
 
@@ -140,14 +111,44 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 
     private void initAppMode() {
-        mAppMode = DBManager.getAppMode();
-        if (Objects.equals(mAppMode, Const.APP_MODE_NET)) {
-            //新建一个mysqlManager
-            DBManager.syncDB();
+//        mAppMode = DBManager.getAppMode();
+        mAppMode = APP_MODE_NET;//方便测试，先设置为网络
+        //如果运行模式为网络，则判断一下网络是否通，连接成功的，进入同步模块
+        if (mAppMode == APP_MODE_NET) {
+            new Thread(taskSyncDB).start();
         }
     }
 
+    @SuppressLint("HandlerLeak")
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            Bundle data = msg.getData();
+            Boolean val = data.getBoolean("value");
 
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.mInstance).setTitle("标题").setMessage(val.toString());
+            builder.show();
+        }
+    };
+
+
+
+    Runnable taskSyncDB = new Runnable() {
+        @Override
+        public void run() {
+            Boolean a=false;
+            if (NetDbManager.getConnectStatus()) {
+                a=NetDbManager.getDbExistStatus();
+            }
+
+            Bundle data = new Bundle();
+            data.putBoolean("value", a);
+            Message msg = new Message();
+            msg.setData(data);
+            handler.sendMessage(msg);
+        }
+    };
 
 
 

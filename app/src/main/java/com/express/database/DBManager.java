@@ -11,7 +11,6 @@ import com.express.entity.RulesEntity;
 import com.express.entity.SmsEntity;
 import com.express.activity.MainActivity;
 
-import java.sql.Connection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +19,9 @@ public class DBManager {
     public static String dbNetUrl;
     private static  DatabaseHelper databaseHelper = new DatabaseHelper(MainActivity.getInstance());
     private static SQLiteDatabase db = databaseHelper.getWritableDatabase();
-//    private static NetDB netDatabaseHelper = new NetDB();
-//    private  Connection conn = NetDB.getConn();
+    public final static String DB_NAME = "express";
+//    private static NetDbManager netDatabaseHelper = new NetDbManager();
+//    private  Connection conn = NetDbManager.getConn();
 
 
     static final String TABLE_SMS = "SMS";
@@ -176,6 +176,8 @@ public class DBManager {
 
 
 
+
+
         return true;
     }
 
@@ -189,21 +191,21 @@ public class DBManager {
 
 
     public String getSyncTime() {
-        String strDate = "2019-1-1";
+        String strLongDate = "2019-1-1";
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Long dateLong = null;
+        Long longDate = null;
 
         @SuppressLint("Recycle") Cursor cur = db.query(true, TABLE_PARAM, new String[]{ROW_PARAM_SYNCTIME},
                 null, null, null, null, null, "1");
         if (cur.moveToFirst()) {
-            strDate = cur.getString(cur.getColumnIndex(ROW_PARAM_SYNCTIME));
             try {
-                dateLong = sdf.parse(strDate).getTime();
+                longDate = sdf.parse(cur.getString(cur.getColumnIndex(ROW_PARAM_SYNCTIME))).getTime();
+                strLongDate = longDate.toString();
             } catch (ParseException ignored) {
-                return "1546272000000";     //即2019-1-1
+                strLongDate = "1546272000000";     //即2019-1-1
             }
         }
-        return dateLong.toString();
+        return strLongDate;
     }
 
     public static boolean updateFetch(String smsID, String fetchDate) {
