@@ -115,7 +115,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         mAppMode = APP_MODE_NET;//方便测试，先设置为网络
         //如果运行模式为网络，则判断一下网络是否通，连接成功的，进入同步模块
         if (mAppMode == APP_MODE_NET) {
-            new Thread(taskSyncDB).start();
+            new Thread(test).start();
         }
     }
 
@@ -127,29 +127,46 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             Bundle data = msg.getData();
             Boolean val = data.getBoolean("value");
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.mInstance).setTitle("标题").setMessage(val.toString());
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.mInstance).setTitle("CreateDb").setMessage(val.toString());
             builder.show();
         }
     };
 
 
 
-    Runnable taskSyncDB = new Runnable() {
-        @Override
-        public void run() {
-            Boolean a=false;
-            if (NetDBManager.getConnectStatus()) {
-                a= NetDBManager.getDbExistStatus();
-            }
+    Runnable taskSyncDB = () -> {
 
-            Bundle data = new Bundle();
-            data.putBoolean("value", a);
-            Message msg = new Message();
-            msg.setData(data);
-            handler.sendMessage(msg);
+        //连接远程mysql
+        if (NetDBManager.getConnectStatus()) {
+            //如果远程mysql连接成功 ，则判断数据库是否存在
+            if (!NetDBManager.getDbExistStatus()) {
+                //如果数据库不存在，则创建数据库
+                NetDBManager.CreateDb();
+            } else {
+                //如果数据库存在，则开始同步
+                DBManager.syncDB();
+            }
         }
+
+        Bundle data = new Bundle();
+        data.putBoolean("value", true);
+        Message msg = new Message();
+        msg.setData(data);
+        handler.sendMessage(msg);
     };
 
+
+    Runnable test = () -> {
+        Boolean a;
+//        NetDBManager.getConnectStatus();
+        NetDBManager.getDbExistStatus();
+        a = NetDBManager.getDbExistStatus();
+        Bundle data = new Bundle();
+        data.putBoolean("value", a);
+        Message msg = new Message();
+        msg.setData(data);
+        handler.sendMessage(msg);
+    };
 
 
     private void initToolbar() {

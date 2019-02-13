@@ -59,10 +59,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(sqlCreateParam);
         db.execSQL(sqlCreateRules);
 
-        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"1", ROW_PARAM_APP_MODE, APP_MODE_SINGLE});
-        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"2", ROW_PARAM_DB_URL, ""});
-        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"3", ROW_PARAM_SYNCTIME, "2019-1-1 00:00:00"});
-
+        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"1", ROW_PARAM_SYNCTIME, "2019-1-1 00:00:00"});
+        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"2", ROW_PARAM_APP_MODE, APP_MODE_SINGLE});
+        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"3", ROW_PARAM_DB_URL, ""});
     }
 
     @Override
