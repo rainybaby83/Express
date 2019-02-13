@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.express.Const.APP_MODE_SINGLE;
 import static com.express.database.DBManager.COL_RULES_ID;
+import static com.express.database.DBManager.DB_NAME;
 import static com.express.database.DBManager.TABLE_PARAM;
 import static com.express.database.DBManager.COL_RULES_KEYWORD;
 import static com.express.database.DBManager.COL_RULES_LEFT;
@@ -17,7 +18,7 @@ import static com.express.database.DBManager.ROW_PARAM_SYNCTIME;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     //类没有实例化,是不能用作父类构造器的参数,必须声明为静态
-    public static final String DB_FILENAME = "express.db"; //数据库名称
+    public static final String DB_FILENAME = DB_NAME+".db"; //数据库文件名称
     private static final int VERSION = 1; //数据库版本
 
 
@@ -58,10 +59,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(sqlCreateParam);
         db.execSQL(sqlCreateRules);
 
-        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"1", ROW_PARAM_APP_MODE, APP_MODE_SINGLE});
-        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"2", ROW_PARAM_DB_URL, ""});
-        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"3", ROW_PARAM_SYNCTIME, "2019-1-1 00:00:00"});
-
+        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"1", ROW_PARAM_SYNCTIME, "2019-1-1 00:00:00"});
+        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"2", ROW_PARAM_APP_MODE, APP_MODE_SINGLE});
+        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"3", ROW_PARAM_DB_URL, ""});
     }
 
     @Override

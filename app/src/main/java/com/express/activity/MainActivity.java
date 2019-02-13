@@ -3,11 +3,15 @@ package com.express.activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
+import android.os.StrictMode;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -25,6 +29,7 @@ import android.widget.Toast;
 import com.express.Const;
 import com.express.database.DBManager;
 import com.express.R;
+import com.express.database.NetDBManager;
 import com.express.entity.RulesEntity;
 import com.express.entity.SmsEntity;
 
@@ -32,8 +37,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
+import static com.express.Const.APP_MODE_NET;
+import static java.lang.String.valueOf;
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
     public String mTelNum;
@@ -41,34 +47,46 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     private FragmentDone fragmentDone;
     private static MainActivity mInstance;
     public Toolbar mToolbar;
-    public String mAppMode;
+    public String mAppMode ;
+//    public NetDBManager netDB= new NetDBManager();
 
     @SuppressLint({"HardwareIds", "MissingPermission"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectDiskReads().
+                detectDiskWrites().detectNetwork().penaltyLog().build());
 
         //设置短信权限
-        String[] permissions = new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.RECEIVE_SMS, Manifest.permission.REQUEST_INSTALL_PACKAGES};
+        String[] permissions = new String[]{Manifest.permission.READ_SMS,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.RECEIVE_SMS,
+                Manifest.permission.REQUEST_INSTALL_PACKAGES,
+                Manifest.permission.INTERNET};
         ActivityCompat.requestPermissions(this, permissions, 2);
         mInstance = this;
-//        this.initAppMode();
+        this.initAppMode();
         this.initToolbar();
         this.appInit();//初始化控件
 
-//        checkPhoneAndInsert();
-//        this.selectTab(0);
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();
+        //放在这里可以保证返回该activity时刷新页面
         this.checkPhoneAndInsert();//此时开始访问数据库
         this.selectTab(0);
+
+
     }
+
+
+
+
+
 
     //处理Tab的点击事件
     @Override
@@ -93,16 +111,62 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 
     private void initAppMode() {
-        mAppMode = DBManager.getAppMode();
-        if (Objects.equals(mAppMode, Const.APP_MODE_NET)) {
-            //新建一个mysqlManager
-            DBManager.syncDB();
+//        mAppMode = DBManager.getAppMode();这句回头要取消注释
+        mAppMode = APP_MODE_NET;//方便测试，先设置为网络
+        //如果运行模式为网络，则判断一下网络是否通，连接成功的，进入同步模块
+        if (mAppMode == APP_MODE_NET) {
+            new Thread(taskSyncDB).start();
         }
     }
 
 
+    @SuppressLint("HandlerLeak")
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            Bundle data = msg.getData();
+            Boolean val = data.getBoolean("value");
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.mInstance).setTitle("CreateDb").setMessage(val.toString());
+            builder.show();
+        }
+    };
 
 
+
+    Runnable taskSyncDB = () -> {
+        Boolean a=false;
+        //连接远程mysql
+        if (NetDBManager.getConnectStatus()) {
+            //如果远程mysql连接成功 ，则判断数据库是否存在
+            if (!NetDBManager.getDbExistStatus()) {
+                //如果数据库不存在，则创建数据库
+                a=NetDBManager.CreateDb();
+            } else {
+                //如果数据库存在，则开始同步
+                DBManager.syncDB();
+            }
+        }
+        Bundle data = new Bundle();
+        data.putBoolean("value", a);
+        Message msg = new Message();
+        msg.setData(data);
+        handler.sendMessage(msg);
+    };
+
+
+    Runnable test = () -> {
+        Boolean a;
+//        NetDBManager.getConnectStatus();
+        NetDBManager.getDbExistStatus();
+        a = NetDBManager.getDbExistStatus();
+        Bundle data = new Bundle();
+        data.putBoolean("value", a);
+        Message msg = new Message();
+        msg.setData(data);
+        handler.sendMessage(msg);
+    };
 
 
     private void initToolbar() {
@@ -228,7 +292,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                     String longBody = cur.getString(indexBody);
                     SmsEntity tmpSms;
                     long longDate = cur.getLong(indexDate);
-                    String smsID = String.valueOf(longDate);
+                    String smsID = valueOf(longDate);
                     String strDate = dateFormat.format(new Date(longDate));
 
                     if (!DBManager.existInDatabase(smsID)) {
@@ -258,6 +322,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
 
     }
+
+
+
+
 
 
 }
