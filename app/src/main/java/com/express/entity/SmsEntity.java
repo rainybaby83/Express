@@ -3,7 +3,7 @@ package com.express.entity;
 
 @lombok.Getter
 public class SmsEntity {
-    private String smsID;
+    private Long smsID;
     private String smsDate;
     private String code;
     private String phone;
@@ -11,7 +11,7 @@ public class SmsEntity {
     private String fetchDate;
     private String fetchStatus;
 
-    public SmsEntity(String smsID, String smsDate, String code, String phone, String position, String fetchDate, String fetchStatus) {
+    public SmsEntity(Long smsID, String smsDate, String code, String phone, String position, String fetchDate, String fetchStatus) {
         this.smsID = smsID;
         this.smsDate = smsDate;
         this.code = code;

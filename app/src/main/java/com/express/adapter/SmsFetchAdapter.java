@@ -52,27 +52,24 @@ public class SmsFetchAdapter extends ArrayAdapter<SmsEntity> {
             txtPosition.setText(smsEntity.getPosition());
             txtCode.setText(smsEntity.getCode());
             txtPhone.setText(smsEntity.getPhone());
-            txtSmsID.setText(smsEntity.getSmsID());
+            txtSmsID.setText(smsEntity.getSmsID().toString());
         }
 
-        btnFetch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View vButton) {
-                if (vButton.getVisibility() == Button.VISIBLE) {
-                    SmsEntity selectedSmsEntity = getItem((Integer) itemView.getTag());
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd HH:mm");
-                    String strDate = dateFormat.format(new Date());
+        btnFetch.setOnClickListener(vButton -> {
+            if (vButton.getVisibility() == Button.VISIBLE) {
+                SmsEntity selectedSmsEntity = getItem((Integer) itemView.getTag());
+                SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd HH:mm");
+                String strDate = dateFormat.format(new Date());
 
-                    if (selectedSmsEntity != null) {
-                        boolean returnValue = DBManager.updateFetch(selectedSmsEntity.getSmsID(), strDate);
-                        if (returnValue) {
-                            vButton.setVisibility(Button.INVISIBLE);
-                            //划掉验证码
-                            TextView txtCode = itemView.findViewById(R.id.itemCode);
-                            SpannableString ss = new SpannableString(txtCode.getText());
-                            ss.setSpan(new StrikethroughSpan(), 0, txtCode.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                            txtCode.setText(ss);
-                        }
+                if (selectedSmsEntity != null) {
+                    boolean returnValue = DBManager.updateFetch(selectedSmsEntity.getSmsID(), strDate);
+                    if (returnValue) {
+                        vButton.setVisibility(Button.INVISIBLE);
+                        //划掉验证码
+                        TextView txtCode1 = itemView.findViewById(R.id.itemCode);
+                        SpannableString ss = new SpannableString(txtCode1.getText());
+                        ss.setSpan(new StrikethroughSpan(), 0, txtCode1.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        txtCode1.setText(ss);
                     }
                 }
             }

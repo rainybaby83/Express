@@ -36,8 +36,8 @@ INSERT INTO `param` VALUES ('1', 'sync_time', '2019-1-1 00:00:00');
 -- ----------------------------
 DROP TABLE IF EXISTS `sms`;
 CREATE TABLE `sms` (
-  `sms_id` varchar(255) NOT NULL,
-  `sms_date` varchar(255) DEFAULT NULL,
+  `sms_id` int(40) NOT NULL,
+  `sms_short_date` varchar(255) DEFAULT NULL,
   `sms_code` varchar(255) DEFAULT NULL,
   `sms_phone` varchar(255) DEFAULT NULL,
   `sms_position` varchar(255) DEFAULT NULL,

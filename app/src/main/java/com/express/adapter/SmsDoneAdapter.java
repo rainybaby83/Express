@@ -26,6 +26,7 @@ public class SmsDoneAdapter extends ArrayAdapter<SmsEntity> {
     }
 
 
+    @SuppressLint("SetTextI18n")
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -47,7 +48,7 @@ public class SmsDoneAdapter extends ArrayAdapter<SmsEntity> {
             txtPosition.setText(smsEntity.getPosition());
             txtCode.setText(smsEntity.getCode());
             txtPhone.setText(smsEntity.getPhone());
-            txtSmsID.setText(smsEntity.getSmsID());
+            txtSmsID.setText(smsEntity.getSmsID().toString());
             txtSmsFetchDateLabel.setText("取件时间: ");
             txtSmsFetchDate.setText(smsEntity.getFetchDate());
         }

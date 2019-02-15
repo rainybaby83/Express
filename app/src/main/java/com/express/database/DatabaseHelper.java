@@ -5,15 +5,23 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.express.Const.APP_MODE_SINGLE;
+import static com.express.Const.INIT_DATE_STRING;
 import static com.express.database.DBManager.COL_RULES_ID;
+import static com.express.database.DBManager.COL_SMS_CODE;
+import static com.express.database.DBManager.COL_SMS_SHORT_DATE;
+import static com.express.database.DBManager.COL_SMS_FETCH_DATE;
+import static com.express.database.DBManager.COL_SMS_FETCH_STATUS;
+import static com.express.database.DBManager.COL_SMS_ID;
+import static com.express.database.DBManager.COL_SMS_PHONE;
+import static com.express.database.DBManager.COL_SMS_POSITION;
 import static com.express.database.DBManager.DB_NAME;
 import static com.express.database.DBManager.TABLE_PARAM;
 import static com.express.database.DBManager.COL_RULES_KEYWORD;
 import static com.express.database.DBManager.COL_RULES_LEFT;
 import static com.express.database.DBManager.COL_RULES_RIGHT;
-import static com.express.database.DBManager.ROW_PARAM_APP_MODE;
-import static com.express.database.DBManager.ROW_PARAM_DB_URL;
-import static com.express.database.DBManager.ROW_PARAM_SYNCTIME;
+import static com.express.database.DBManager.VALUE_APP_MODE;
+import static com.express.database.DBManager.VALUE_DB_URL;
+import static com.express.database.DBManager.VALUE_SYNC_TIME;
 
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -34,13 +42,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String sqlCreateDB =
                 "CREATE TABLE IF NOT EXISTS " + DBManager.TABLE_SMS +
-                        " (sms_id           TEXT      PRIMARY KEY NOT NULL, " +
-                        " sms_date          TEXT, " +
-                        " sms_code          TEXT, " +
-                        " sms_phone         TEXT, " +
-                        " sms_position      TEXT, " +
-                        " sms_fetch_date    TEXT, " +
-                        " sms_fetch_status  TEXT )";
+                        " (" + COL_SMS_ID + " INTEGER PRIMARY KEY NOT NULL, " +
+                        COL_SMS_SHORT_DATE + " TEXT, " +
+                        COL_SMS_CODE + " TEXT, " +
+                        COL_SMS_PHONE + " TEXT, " +
+                        COL_SMS_POSITION + " TEXT, " +
+                        COL_SMS_FETCH_DATE + " TEXT, " +
+                        COL_SMS_FETCH_STATUS + " TEXT )";
 
         String sqlCreateParam =
                 "CREATE TABLE IF NOT EXISTS " + TABLE_PARAM +
@@ -59,9 +67,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(sqlCreateParam);
         db.execSQL(sqlCreateRules);
 
-        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"1", ROW_PARAM_SYNCTIME, "2019-1-1 00:00:00"});
-        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"2", ROW_PARAM_APP_MODE, APP_MODE_SINGLE});
-        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"3", ROW_PARAM_DB_URL, ""});
+        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"1", VALUE_SYNC_TIME, INIT_DATE_STRING});
+        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"2", VALUE_APP_MODE, APP_MODE_SINGLE});
+        db.execSQL("INSERT INTO " + TABLE_PARAM + " VALUES (?,?,?)", new Object[]{"3", VALUE_DB_URL, ""});
     }
 
     @Override

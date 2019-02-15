@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.express.Const.APP_MODE_NET;
+import static com.express.Const.SDF_YYYY_M_D;
 import static java.lang.String.valueOf;
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
@@ -48,7 +49,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     private static MainActivity mInstance;
     public Toolbar mToolbar;
     public String mAppMode ;
-//    public NetDBManager netDB= new NetDBManager();
+
 
     @SuppressLint({"HardwareIds", "MissingPermission"})
     @Override
@@ -66,6 +67,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 Manifest.permission.INTERNET};
         ActivityCompat.requestPermissions(this, permissions, 2);
         mInstance = this;
+
+
+
         this.initAppMode();
         this.initToolbar();
         this.appInit();//初始化控件
@@ -79,12 +83,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         //放在这里可以保证返回该activity时刷新页面
         this.checkPhoneAndInsert();//此时开始访问数据库
         this.selectTab(0);
-
-
     }
-
-
-
 
 
 
@@ -126,9 +125,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             Bundle data = msg.getData();
-            Boolean val = data.getBoolean("value");
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.mInstance).setTitle("CreateDb").setMessage(val.toString());
+            String val = data.getString("value");
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.mInstance).setTitle("弹屏测试").setMessage(val);
             builder.show();
         }
     };
@@ -136,37 +134,25 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 
     Runnable taskSyncDB = () -> {
-        Boolean a=false;
+        String a = "";
         //连接远程mysql
         if (NetDBManager.getConnectStatus()) {
             //如果远程mysql连接成功 ，则判断数据库是否存在
             if (!NetDBManager.getDbExistStatus()) {
                 //如果数据库不存在，则创建数据库
-                a=NetDBManager.CreateDb();
+                a = String.valueOf(NetDBManager.CreateAndInsert());
             } else {
                 //如果数据库存在，则开始同步
-                DBManager.syncDB();
+                a = DBManager.syncDB();
             }
         }
         Bundle data = new Bundle();
-        data.putBoolean("value", a);
+        data.putString("value", a);
         Message msg = new Message();
         msg.setData(data);
         handler.sendMessage(msg);
     };
 
-
-    Runnable test = () -> {
-        Boolean a;
-//        NetDBManager.getConnectStatus();
-        NetDBManager.getDbExistStatus();
-        a = NetDBManager.getDbExistStatus();
-        Bundle data = new Bundle();
-        data.putBoolean("value", a);
-        Message msg = new Message();
-        msg.setData(data);
-        handler.sendMessage(msg);
-    };
 
 
     private void initToolbar() {
@@ -291,27 +277,21 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 do {
                     String longBody = cur.getString(indexBody);
                     SmsEntity tmpSms;
-                    long longDate = cur.getLong(indexDate);
-                    String smsID = valueOf(longDate);
-                    String strDate = dateFormat.format(new Date(longDate));
+                    Long smsID = cur.getLong(indexDate);
+                    String strDate = dateFormat.format(new Date(smsID));
 
-                    if (!DBManager.existInDatabase(smsID)) {
+                    if (!DBManager.existInDatabase(smsID.toString())) {
                         for (RulesEntity rule : rules) {
                             if (longBody.contains(rule.getKeyword())) {
                                 position = rule.getKeyword();
                                 strCode = StringUtils.substringBetween(longBody, rule.getCodeLeft(), rule.getCodeRight());
                             }
-//                            position = "馒头房"; "提货码", "来取");
-//                            position = "丰巢" "请凭取件码『", "』前往明珠西苑");
-//                            position = "日日顺""凭取件码", "到明珠西苑");
                         }
-
                         //如果取到的验证码不为空，则写入数据库
                         if (strCode != null) {
                             tmpSms = new SmsEntity(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, Const.FECTH_STATE_NOT_DONE);
                             DBManager.insertSms(tmpSms);
                         }
-
                     }
                 } while (cur.moveToNext());
 
@@ -320,11 +300,16 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 }
             }
         }
-
     }
 
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mInstance = null;
+        System.exit(0);
+    }
 
 
 
