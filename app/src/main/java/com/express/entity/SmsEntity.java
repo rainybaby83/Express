@@ -1,6 +1,8 @@
 package com.express.entity;
 
 
+import com.express.Const;
+
 @lombok.Getter
 public class SmsEntity {
     private Long smsID;
@@ -21,8 +23,18 @@ public class SmsEntity {
         this.fetchStatus = fetchStatus;
     }
 
-    public boolean compare(SmsEntity newTable) {
-        return false;
+    public int compareIDandFetch(SmsEntity entity) {
+        int value;
+        if (this.smsID.equals(entity.smsID)) {
+            if (this.fetchStatus.equals(entity.fetchStatus)) {
+                value = Const.COMPARE_EQUAL;
+            } else {
+                value = Const.COMPARE_HALF_EQUAL;
+            }
+        } else {
+            value = Const.COMPARE_NOT_EQUAL;
+        }
+        return value;
     }
 
 }

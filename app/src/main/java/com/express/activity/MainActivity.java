@@ -39,7 +39,6 @@ import java.util.Date;
 import java.util.List;
 
 import static com.express.Const.APP_MODE_NET;
-import static com.express.Const.SDF_YYYY_M_D;
 import static java.lang.String.valueOf;
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
@@ -289,7 +288,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                         }
                         //如果取到的验证码不为空，则写入数据库
                         if (strCode != null) {
-                            tmpSms = new SmsEntity(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, null, Const.FECTH_STATE_NOT_DONE);
+                            tmpSms = new SmsEntity(smsID, strDate, strCode, MainActivity.getInstance().mTelNum, position, "", Const.FECTH_STATE_NOT_DONE);
                             DBManager.insertSms(tmpSms);
                         }
                     }

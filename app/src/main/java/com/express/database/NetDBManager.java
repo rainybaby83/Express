@@ -5,6 +5,7 @@ package com.express.database;
 
 import android.content.ContentValues;
 
+import com.express.Const;
 import com.express.activity.MainActivity;
 import com.express.entity.SmsEntity;
 
@@ -27,8 +28,9 @@ import java.util.List;
 
 import static com.express.Const.APP_MODE_NET;
 import static com.express.Const.APP_MODE_SINGLE;
+import static com.express.Const.FECTH_STATE_DONE;
 import static com.express.Const.INIT_DATE_LONG;
-import static com.express.Const.SDF_YYYY_M_D;
+import static com.express.Const.SDF_yyyy_M_d;
 import static com.express.database.DBManager.COL_SMS_CODE;
 import static com.express.database.DBManager.COL_SMS_FETCH_DATE;
 import static com.express.database.DBManager.COL_SMS_FETCH_STATUS;
@@ -153,14 +155,13 @@ public class NetDBManager {
             Date d;
             if (rs.next()) {
                 str = rs.getString("value");
-                d = SDF_YYYY_M_D.parse(str);
+                d = SDF_yyyy_M_d.parse(str);
                 value = d.getTime();
             }
         } catch (SQLException e) {
             //如果抛出异常，则value值为INIT_DATE_LONG
         } catch (ParseException e) {
             //如果抛出异常，则value值为INIT_DATE_LONG
-            e.printStackTrace();
         }
         return value;
     }
@@ -208,17 +209,42 @@ public class NetDBManager {
                     COL_SMS_FETCH_DATE + ", " +
                     COL_SMS_FETCH_STATUS + ") " +
                     " VALUES ( " +
-                    sms.getSmsID() + "," +
-                    sms.getSmsDate() + "," +
-                    sms.getCode() + "," +
-                    sms.getPhone() + "," +
-                    sms.getPosition() + "," +
-                    sms.getFetchDate() + "," +
-                    sms.getFetchStatus() + ");";
+                    sms.getSmsID() + ",'" +
+                    sms.getSmsDate() + "','" +
+                    sms.getCode() + "','" +
+                    sms.getPhone() + "','" +
+                    sms.getPosition() + "','" +
+                    sms.getFetchDate() + "','" +
+                    sms.getFetchStatus() + "');";
                 dbStmt.execute(sqlInsertSms);
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return true;
+    }
+
+
+    /**
+     * @param smsID
+     * @param fetchDate
+     * @return
+     */
+    public static boolean updateFetch(Long smsID, String fetchDate) {
+        boolean status = false;
+        if (smsID != null) {
+            String sqlUpdateStatus = "update " + TABLE_SMS +
+                    " set " + COL_SMS_FETCH_STATUS + " = '" + FECTH_STATE_DONE + "'," +
+                    COL_SMS_FETCH_DATE + " = '" + fetchDate + "'" +
+                    " where " + COL_SMS_ID + "=" + smsID.toString() + "';";
+            try {
+                dbStmt.executeUpdate(sqlUpdateStatus);
+                status = true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return status;
     }
 }
