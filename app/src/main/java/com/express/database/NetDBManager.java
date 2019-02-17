@@ -236,7 +236,7 @@ public class NetDBManager {
             String sqlUpdateStatus = "update " + TABLE_SMS +
                     " set " + COL_SMS_FETCH_STATUS + " = '" + FECTH_STATE_DONE + "'," +
                     COL_SMS_FETCH_DATE + " = '" + fetchDate + "'" +
-                    " where " + COL_SMS_ID + "=" + smsID.toString() + "';";
+                    " where " + COL_SMS_ID + "=" + smsID.toString() + ";";
             try {
                 dbStmt.executeUpdate(sqlUpdateStatus);
                 status = true;

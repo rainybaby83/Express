@@ -306,56 +306,41 @@ public class DBManager {
      * @param listNet 服务器集合
      */
     private static void compareSmsList(List<SmsEntity> listDB, List<SmsEntity> listNet) {
+        for (int i = 0; i < listDB.size(); i++) {
+            SmsEntity smsDB = listDB.get(i);
 
-//        //如果2个集合都是null，返回true
-//        if (listDB == null && listNet == null) {
-//            return true;
-//        } else if (listDB == null) {
-//            //本地集合为空，则把服务器集合全部写入本地
-//            listNet.forEach(DBManager::insertSms);
-//        } else if (listNet == null) {
-//            //服务器集合为空，则把本地集合全部写入服务器
-//            listDB.forEach(NetDBManager::insertSms);
-//        } else {
-            //两个集合都不是null
-            for (int i = 0; i < listDB.size(); i++) {
-                SmsEntity smsDB = listDB.get(i);
-
-                for (int j = 0; j < listNet.size(); j++) {
-                    SmsEntity smsNet = listNet.get(j);
-                    //循环服务器集合，
-                    int status = smsDB.compareIDandFetch(smsNet);
-                    switch (status) {
-                        case COMPARE_NOT_EQUAL:
-                            //两个元素不相同，保留在集合，跳过
-                            break;
-                        case COMPARE_HALF_EQUAL:
-                            //ID相同，但是取件状态不同，找到未取的那个元素，更新状态，然后从2个集合中删除元素
-                            if (smsDB.getFetchStatus().equals(FECTH_STATE_NOT_DONE)) {
-                                updateFetch(smsDB.getSmsID(), smsNet.getFetchDate());
-                            } else if (smsNet.getFetchStatus().equals(FECTH_STATE_NOT_DONE)) {
-                                NetDBManager.updateFetch(smsNet.getSmsID(), smsDB.getFetchDate());
-                            }
-                            listDB.remove(i);
-                            listNet.remove(j);
-                            i--;
-                            j--;
-                            break;
-                        case COMPARE_EQUAL:
-                            //完全相同，从2个集合中删除元素
-                            listDB.remove(i);
-                            listNet.remove(j);
-                            i--;
-                            j--;
-                            break;
+            for (int j = 0; j < listNet.size(); j++) {
+                SmsEntity smsNet = listNet.get(j);
+                //循环服务器集合，
+                int status = smsDB.compareIDandFetch(smsNet);
+                if (status == COMPARE_NOT_EQUAL) {
+                    //两个元素不相同，保留在集合，不做任何操作
+                } else if (status == COMPARE_HALF_EQUAL) {
+                    //ID相同，但是取件状态不同，找到未取的那个元素，更新状态，然后从2个集合中删除元素
+                    if (smsDB.getFetchStatus().equals(FECTH_STATE_NOT_DONE)) {
+                        updateFetch(smsDB.getSmsID(), smsNet.getFetchDate());
+                    } else if (smsNet.getFetchStatus().equals(FECTH_STATE_NOT_DONE)) {
+                        NetDBManager.updateFetch(smsNet.getSmsID(), smsDB.getFetchDate());
                     }
-                } //end for listNet
+                    listDB.remove(i);
+                    listNet.remove(j);
+                    i--;
+                    j--;
+                    break;
+                } else if (status == COMPARE_EQUAL) {
+                    //完全相同，从2个集合中删除元素
+                    listDB.remove(i);
+                    listNet.remove(j);
+                    i--;
+                    j--;
+                    break;
+                }
+            } //end for listNet
+        } //end for listDB
 
-            } //end for listDB
-
-            //listDB、listNet全部循环完毕并且remove后，剩下的元素需要互相同步
-            listDB.forEach(NetDBManager::insertSms);
-            listNet.forEach(DBManager::insertSms);
+        //listDB、listNet全部循环完毕并且remove后，剩下的元素需要互相同步
+        listDB.forEach(NetDBManager::insertSms);
+        listNet.forEach(DBManager::insertSms);
 
     }
 
