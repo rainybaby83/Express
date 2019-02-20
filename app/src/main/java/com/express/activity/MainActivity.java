@@ -3,7 +3,6 @@ package com.express.activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -20,7 +19,6 @@ import android.os.Bundle;
 
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
@@ -48,9 +46,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     private static MainActivity mInstance;
     public Toolbar mToolbar;
     public String mAppMode ;
+    Handler handler;
 
 
-    @SuppressLint({"HardwareIds", "MissingPermission"})
+    @SuppressLint({"HardwareIds", "MissingPermission", "HandlerLeak"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,22 +65,32 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 Manifest.permission.INTERNET};
         ActivityCompat.requestPermissions(this, permissions, 2);
         mInstance = this;
-
-
-
-        this.initAppMode();
         this.initToolbar();
         this.appInit();//初始化控件
 
+        this.threadSync();//此处涉及网络通讯、本地数据库
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                Bundle data = msg.getData();
+                String val = data.getString("value");
+                if (val.equals("同步完毕")) {
+                    checkPhoneAndInsert();//此时开始访问数据库
+                    selectTab(0);  //此时开始更新UI
+                }
+            }
+        };
     }
+
 
 
     @Override
     protected void onStart() {
         super.onStart();
         //放在这里可以保证返回该activity时刷新页面
-        this.checkPhoneAndInsert();//此时开始访问数据库
-        this.selectTab(0);
+        checkPhoneAndInsert();//此时开始访问数据库
+        selectTab(0);  //此时开始更新UI
     }
 
 
@@ -108,49 +117,16 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 
 
-    private void initAppMode() {
-//        mAppMode = DBManager.getAppMode();这句回头要取消注释
-        mAppMode = APP_MODE_NET;//方便测试，先设置为网络
+    private void threadSync() {
+        mAppMode = DBManager.getAppMode();
+//        mAppMode = APP_MODE_NET;//方便测试，先设置为网络
         //如果运行模式为网络，则判断一下网络是否通，连接成功的，进入同步模块
-        if (mAppMode == APP_MODE_NET) {
+        if (mAppMode.equals(APP_MODE_NET)) {
+            checkPhoneAndInsert();
             new Thread(taskSyncDB).start();
         }
     }
 
-
-    @SuppressLint("HandlerLeak")
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            Bundle data = msg.getData();
-            String val = data.getString("value");
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.mInstance).setTitle("弹屏测试").setMessage(val);
-            builder.show();
-        }
-    };
-
-
-
-    Runnable taskSyncDB = () -> {
-        String a = "";
-        //连接远程mysql
-        if (NetDBManager.getConnectStatus()) {
-            //如果远程mysql连接成功 ，则判断数据库是否存在
-            if (!NetDBManager.getDbExistStatus()) {
-                //如果数据库不存在，则创建数据库
-                a = String.valueOf(NetDBManager.CreateAndInsert());
-            } else {
-                //如果数据库存在，则开始同步
-                a = DBManager.syncDB();
-            }
-        }
-        Bundle data = new Bundle();
-        data.putString("value", a);
-        Message msg = new Message();
-        msg.setData(data);
-        handler.sendMessage(msg);
-    };
 
 
 
@@ -160,18 +136,16 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         //设置menu
         mToolbar.inflateMenu(R.menu.menu_main_activity);
         //设置menu的点击事件
-        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                int menuItemId = item.getItemId();
-                if (menuItemId == R.id.menu_rules) {
-                    Intent i = new Intent(MainActivity.this , RulesActivity.class);
-                    startActivity(i);
-                } else if (menuItemId == R.id.menu_web) {
-                    Toast.makeText(MainActivity.this, "网络", Toast.LENGTH_SHORT).show();
-                }
-                return true;
+        mToolbar.setOnMenuItemClickListener(item -> {
+            int menuItemId = item.getItemId();
+            if (menuItemId == R.id.menu_rules) {
+                Intent i = new Intent(MainActivity.this , RulesActivity.class);
+                startActivity(i);
+            } else if (menuItemId == R.id.menu_mode) {
+                Intent i = new Intent(MainActivity.this , ParamActivity.class);
+                startActivity(i);
             }
+            return true;
         });
 
     }
@@ -305,11 +279,41 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
     @Override
     protected void onDestroy() {
+        if (mAppMode == APP_MODE_NET) {
+            new Thread(taskSyncDB).start();
+        }
         super.onDestroy();
-        mInstance = null;
-        System.exit(0);
+
     }
 
+    public void setmAppMode(String mode) {
+        mAppMode = mode;
+
+    }
+
+
+
+
+
+    Runnable taskSyncDB = () -> {
+        String a = "";
+        //连接远程mysql
+        if (NetDBManager.getConnectStatus()) {
+            //如果远程mysql连接成功 ，则判断数据库是否存在
+            if (!NetDBManager.getDbExistStatus()) {
+                //如果数据库不存在，则创建数据库
+                a = String.valueOf(NetDBManager.CreateNetDbAndInsert());
+            } else {
+                //如果数据库存在，则开始同步
+                DBManager.syncDB();
+            }
+        }
+        Bundle data = new Bundle();
+        data.putString("value", "同步完毕");
+        Message msg = Message.obtain();
+        msg.setData(data);
+        handler.sendMessage(msg);
+    };
 
 
 }

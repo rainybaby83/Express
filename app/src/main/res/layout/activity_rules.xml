@@ -9,10 +9,10 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbarRules"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="50dp"
         android:background="@color/weixinGreen"
         app:navigationIcon="@drawable/icon_return"
-        app:title="短信抓取规则"
+        app:title="设置短信抓取规则"
         app:titleTextColor="@color/white" />
 
     <TextView

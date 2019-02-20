@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.express.Const.APP_MODE_SINGLE;
 import static com.express.Const.COMPARE_EQUAL;
 import static com.express.Const.COMPARE_HALF_EQUAL;
 import static com.express.Const.COMPARE_NOT_EQUAL;
@@ -43,9 +44,14 @@ public class DBManager {
     static final String COL_SMS_PHONE = "sms_phone";
     static final String COL_SMS_FETCH_DATE = "sms_fetch_date";
     static final String COL_SMS_FETCH_STATUS = "sms_fetch_status";
-    static final String VALUE_APP_MODE = "app_mode";
-    static final String VALUE_DB_URL = "db_url";
-    static final String VALUE_SYNC_TIME = "sync_time";
+    static final String COL_PARAM_NAME = "param_name";
+    static final String COL_PARAM_VALUE = "value";
+    public static final String PARAM_NAME_APP_MODE = "app_mode";
+    public static final String PARAM_NAME_DB_URL = "db_url";
+    public static final String PARAM_NAME_SYNC_TIME = "sync_time";
+    public static final String PARAM_NAME_USER = "user";
+    public static final String PARAM_NAME_PASSWORD = "password";
+    public static final String PARAM_NAME_PORT = "port";
 
 
     //往数据库里写短信
@@ -104,6 +110,7 @@ public class DBManager {
 
     /**
      * 按照日期查找本手机数据库，返回List集合
+     *
      * @param date 查询参数：日期
      * @return 短信List结合
      */
@@ -117,6 +124,7 @@ public class DBManager {
 
     /**
      * 按照取件状态查找本手机数据库，返回List集合
+     *
      * @param fetchStatus 查询参数，取件状态
      * @return 短信List结合
      */
@@ -127,6 +135,7 @@ public class DBManager {
 
     /**
      * 按照日期和取件状态查找本手机数据库，返回List集合
+     *
      * @param date        查询参数，查询的起始日期
      * @param fetchStatus 查询参数，取件状态
      * @return 短信List结合
@@ -146,7 +155,7 @@ public class DBManager {
      * @return 短信List集合
      */
     private static List<SmsEntity> getSmsFromDB(String where, String[] params, String orderby) {
-        String[] columns = {COL_SMS_ID, COL_SMS_SHORT_DATE, COL_SMS_CODE, COL_SMS_PHONE, COL_SMS_POSITION, COL_SMS_FETCH_DATE,COL_SMS_FETCH_STATUS};
+        String[] columns = {COL_SMS_ID, COL_SMS_SHORT_DATE, COL_SMS_CODE, COL_SMS_PHONE, COL_SMS_POSITION, COL_SMS_FETCH_DATE, COL_SMS_FETCH_STATUS};
         Cursor cur = db.query(TABLE_SMS, columns, where, params, null, null, orderby);
         List<SmsEntity> mItem = new ArrayList<>();
         if (cur.moveToFirst()) {
@@ -183,7 +192,7 @@ public class DBManager {
         Cursor cur = db.query(TABLE_RULES, columns, null, null, null, null, null);
         List<RulesEntity> mItem = new ArrayList<>();
         if (cur.moveToFirst()) {
-            RulesEntity tmpRules ;
+            RulesEntity tmpRules;
             int indexKeyword = cur.getColumnIndex(COL_RULES_KEYWORD);
             int indexCodeLeft = cur.getColumnIndex(COL_RULES_LEFT);
             int indexCodeRight = cur.getColumnIndex(COL_RULES_RIGHT);
@@ -205,6 +214,7 @@ public class DBManager {
 
     /**
      * 按手机短信ID对比本地数据库，查找是否存在
+     *
      * @param smsID 要对比的短信ID
      * @return true false
      */
@@ -236,22 +246,32 @@ public class DBManager {
         compareSmsList(listSmsDB, listSmsNet);
 
         //更新本机和服务器的同步时间
+        String nowTime = SDF_yyyy_M_d.format(new Date());
+        DBManager.updateParam(PARAM_NAME_SYNC_TIME,nowTime);
+        NetDBManager.updateSyncTime(nowTime);
 
-        return Long.toString(minSyncTime);
+        return nowTime;
     }
-
 
 
     /**
      * @return
      */
     public static String getAppMode() {
-        //获取运行模式
-
         //默认单机模式
-        return Const.APP_MODE_SINGLE;
-    }
+        String appMode = APP_MODE_SINGLE;
+        Cursor cur = db.query(true, TABLE_PARAM,
+                new String[]{COL_PARAM_VALUE},
+                COL_PARAM_NAME + " = ? ",
+                new String[]{PARAM_NAME_APP_MODE},
+                null, null, null, "1");
 
+        if (cur.moveToFirst()) {
+            appMode = cur.getString(cur.getColumnIndex(COL_PARAM_VALUE));
+            cur.close();
+        }
+        return appMode;
+    }
 
 
     /**
@@ -259,18 +279,21 @@ public class DBManager {
      */
     private static Long getDbSyncTime() {
         Long value = INIT_DATE_LONG;
-        Cursor cur = db.query(true, TABLE_PARAM, new String[]{"value"}, "param_name = ? ",
-                new String[]{VALUE_SYNC_TIME}, null, null, null, "1");
+        Cursor cur = db.query(true, TABLE_PARAM,
+                new String[]{COL_PARAM_VALUE},
+                COL_PARAM_NAME + " = ? ",
+                new String[]{PARAM_NAME_SYNC_TIME},
+                null, null, null, "1");
         try {
             if (cur.moveToFirst()) {
-                Date d = SDF_yyyy_M_d.parse(cur.getString(cur.getColumnIndex("value")));
-                value =d.getTime() ;
+                Date d = SDF_yyyy_M_d.parse(cur.getString(cur.getColumnIndex(COL_PARAM_VALUE)));
+                value = d.getTime();
                 cur.close();
             }
         } catch (ParseException ignored) {
             //如果抛出异常，则value值为INIT_DATE_LONG
         }
-          return value;
+        return value;
     }
 
 
@@ -293,16 +316,43 @@ public class DBManager {
     }
 
 
+    public static boolean updateParam(String paramName, String paramValue) {
+        ContentValues cv = new ContentValues();
+        cv.put(COL_PARAM_VALUE, paramValue);
+        int returnValue = db.update(TABLE_PARAM, cv,
+                COL_PARAM_NAME + " = '" + paramName + "'; ", null);
+        if (returnValue == -1) {
+            return false;
+        }
+        return true;
+    }
+
+
+    public static String getParam(String paramName) {
+        String paramValue = "";
+        String[] columns = {COL_PARAM_VALUE};
+        String where = COL_PARAM_NAME + " = ?";
+        String[] params = {paramName};
+        Cursor cur = db.query(TABLE_PARAM, columns, where, params, null, null, null);
+        if (cur.moveToFirst()) {
+            paramValue = cur.getString(cur.getColumnIndex(COL_PARAM_VALUE));
+            cur.close();
+        }
+        return paramValue;
+    }
+
+
     /**
      * 1 本机有，服务器有，则对比状态。
-     *   1.1状态相同，跳到1.3
-     *   1.2状态不同，把服务器或本地的那个“未取”改为“已取”，然后1.3
-     *   1.3从两个集合里删掉
+     * 1.1状态相同，跳到1.3
+     * 1.2状态不同，把服务器或本地的那个“未取”改为“已取”，然后1.3
+     * 1.3从两个集合里删掉
      * 2 本机有，服务器无，
-     *   2.1 上传到服务器
-     *   2.2 从本地集合删除，最终本地集合应该为空
+     * 2.1 上传到服务器
+     * 2.2 从本地集合删除，最终本地集合应该为空
      * 3 服务器集合如果还有数据，写入到本地
-     * @param listDB 本地集合
+     *
+     * @param listDB  本地集合
      * @param listNet 服务器集合
      */
     private static void compareSmsList(List<SmsEntity> listDB, List<SmsEntity> listNet) {
@@ -341,7 +391,7 @@ public class DBManager {
         //listDB、listNet全部循环完毕并且remove后，剩下的元素需要互相同步
         listDB.forEach(NetDBManager::insertSms);
         listNet.forEach(DBManager::insertSms);
-
     }
+
 
 }

@@ -3,9 +3,6 @@ package com.express.database;
 
 
 
-import android.content.ContentValues;
-
-import com.express.Const;
 import com.express.activity.MainActivity;
 import com.express.entity.SmsEntity;
 
@@ -17,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -31,6 +27,8 @@ import static com.express.Const.APP_MODE_SINGLE;
 import static com.express.Const.FECTH_STATE_DONE;
 import static com.express.Const.INIT_DATE_LONG;
 import static com.express.Const.SDF_yyyy_M_d;
+import static com.express.database.DBManager.COL_PARAM_NAME;
+import static com.express.database.DBManager.COL_PARAM_VALUE;
 import static com.express.database.DBManager.COL_SMS_CODE;
 import static com.express.database.DBManager.COL_SMS_FETCH_DATE;
 import static com.express.database.DBManager.COL_SMS_FETCH_STATUS;
@@ -39,15 +37,15 @@ import static com.express.database.DBManager.COL_SMS_PHONE;
 import static com.express.database.DBManager.COL_SMS_POSITION;
 import static com.express.database.DBManager.COL_SMS_SHORT_DATE;
 import static com.express.database.DBManager.DB_NAME;
-import static com.express.database.DBManager.VALUE_SYNC_TIME;
+import static com.express.database.DBManager.PARAM_NAME_SYNC_TIME;
 import static com.express.database.DBManager.TABLE_PARAM;
 import static com.express.database.DBManager.TABLE_SMS;
 
 public class NetDBManager {
     private static String mDriver = "com.mysql.jdbc.Driver";
-    private static String mUrl = "jdbc:mysql://rainybaby.mysql.rds.aliyuncs.com:3306/";//MYSQL数据库连接Url
-    private static String mUser="root";
-    private static String mPassword = "Raiky_2002";
+    private static String mUrl = "";
+    private static String mUser = "";
+    private static String mPassword = "";
     private static Boolean statusConn = false, statusDbExist = false;
     private static Connection dbConn,testConn;
     private static Statement dbStmt,testStmt;
@@ -59,7 +57,7 @@ public class NetDBManager {
      * @return 返回是否成功，Boolean
      */
     public static boolean getConnectStatus() {
-        if (MainActivity.getInstance().mAppMode == APP_MODE_NET) {
+        if (MainActivity.getInstance().mAppMode.equals(APP_MODE_NET)) {
             try {
                 Class.forName(mDriver);
                 testConn = DriverManager.getConnection(mUrl + "information_schema", mUser, mPassword);//获取连接
@@ -68,8 +66,28 @@ public class NetDBManager {
                 statusConn = false;
                 MainActivity.getInstance().mAppMode = APP_MODE_SINGLE;
             } catch (SQLException e) {
-                e.printStackTrace();
+                MainActivity.getInstance().mAppMode = APP_MODE_SINGLE;
+                statusConn = false;
             }
+        }
+        return statusConn;
+    }
+
+
+    /**
+     * 测试网络连接是否成功，若失败，app运行模式改为单机
+     * @return 返回是否成功，Boolean
+     */
+    public static boolean getConnectStatusForParamTest(String url, String user, String password) {
+
+        try {
+            Class.forName(mDriver);
+            Connection tmpConn = DriverManager.getConnection(url + "information_schema", user, password);//获取连接
+            statusConn = true;
+        } catch (ClassNotFoundException e) {
+            statusConn = false;
+        } catch (SQLException e) {
+            statusConn = false;
         }
         return statusConn;
     }
@@ -81,7 +99,7 @@ public class NetDBManager {
      * @return 返回是否成功，Boolean
      */
     public static boolean getDbExistStatus() {
-        if (MainActivity.getInstance().mAppMode == APP_MODE_NET && statusConn == true) {
+        if (MainActivity.getInstance().mAppMode.equals(APP_MODE_NET) && statusConn == true) {
             try {
                 ResultSet rs1,rs2;
                 String sqlTable1 = "SELECT  DISTINCT `TABLE_SCHEMA` FROM `TABLES` " +
@@ -110,7 +128,7 @@ public class NetDBManager {
      * 创建数据库及表结构。
      * @return 返回是否成功，Boolean
      */
-    public static boolean CreateAndInsert() {
+    public static boolean CreateNetDbAndInsert() {
         Boolean status = false;
         //如果远程mysql可以连接，则开始创建
         if (testConn != null) {
@@ -145,7 +163,9 @@ public class NetDBManager {
      * @return String格式的时间
      */
     static Long getNetSyncTime() {
-        String sqlGetTime = "SELECT DISTINCT value FROM " + TABLE_PARAM + " WHERE param_name = '" + VALUE_SYNC_TIME + "';";
+        String sqlGetTime = "SELECT DISTINCT "+COL_PARAM_VALUE+
+                " FROM " + TABLE_PARAM +
+                " WHERE " + COL_PARAM_NAME + " = '" + PARAM_NAME_SYNC_TIME + "';";
         Long value = INIT_DATE_LONG;
         try {
             dbConn = DriverManager.getConnection(mUrl + DB_NAME, mUser, mPassword);
@@ -154,7 +174,7 @@ public class NetDBManager {
             String str;
             Date d;
             if (rs.next()) {
-                str = rs.getString("value");
+                str = rs.getString(COL_PARAM_VALUE);
                 d = SDF_yyyy_M_d.parse(str);
                 value = d.getTime();
             }
@@ -246,5 +266,27 @@ public class NetDBManager {
 
         }
         return status;
+    }
+
+
+    public static boolean updateSyncTime(String synctime) {
+        boolean status = false;
+        String sqlUpdateStatus = "update " + TABLE_PARAM +
+                " set " + COL_PARAM_VALUE + " = '" + synctime + "'" +
+                " where " + COL_PARAM_NAME + "='" + PARAM_NAME_SYNC_TIME + "';";
+        try {
+            dbStmt.executeUpdate(sqlUpdateStatus);
+            status = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return status;
+    }
+
+
+    public static void setParam(String longUrl,String user,String password) {
+        mUrl = longUrl;
+        mUser = user;
+        mPassword = password;
     }
 }

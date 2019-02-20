@@ -6,13 +6,13 @@
         android:id="@+id/menu_rules"
         android:checkable="false"
         android:checked="false"
-        android:title="短信抓取规则"
+        android:title="设置抓取规则"
         app:showAsAction="never" />
     <item
-        android:id="@+id/menu_web"
+        android:id="@+id/menu_mode"
         android:checkable="false"
         android:enabled="true"
-        android:title="设置网络"
+        android:title="设置运行模式"
         android:visible="true"
         app:showAsAction="never" />
 </menu>

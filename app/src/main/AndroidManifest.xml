@@ -28,6 +28,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.RulesActivity" />
+        <activity android:name=".activity.ParamActivity" />
     </application>
 
 </manifest>

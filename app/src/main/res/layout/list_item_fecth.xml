@@ -115,7 +115,7 @@
             android:layout_height="match_parent"
             android:layout_marginRight="10dp"
             android:layout_weight="50"
-            android:background="@drawable/btn_style"
+            android:background="@drawable/btn_style_enable"
             android:text="取件"
             android:textColor="#fff" />
 

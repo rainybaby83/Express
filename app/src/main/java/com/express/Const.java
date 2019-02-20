@@ -13,7 +13,7 @@ public class Const {
 
     @SuppressLint("SimpleDateFormat")
     public static final SimpleDateFormat SDF_yyyy_M_d = new SimpleDateFormat("yyyy-M-d HH:mm:ss");
-    public static final String INIT_DATE_STRING = "2019-3-1 00:00:00";
+    public static final String INIT_DATE_STRING = "2019-2-1 00:00:00";
     public static final Long INIT_DATE_LONG = 1546272000000L; //2019-1-1 00:00:00
 
     public static final int COMPARE_EQUAL = 2;

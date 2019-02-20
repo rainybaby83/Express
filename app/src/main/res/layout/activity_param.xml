@@ -7,64 +7,170 @@
     android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbarParam"
+        android:id="@+id/toolbarMode"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="50dp"
         android:background="@color/weixinGreen"
         app:navigationIcon="@drawable/icon_return"
-        app:title="设定运行模式"
+        app:title="设置运行模式"
         app:titleTextColor="@color/white" />
 
-    <TextView
-        android:id="@+id/textView6"
+    <RadioGroup
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_margin="30dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <LinearLayout
+        <RadioButton
+            android:id="@+id/radioButton_single"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/weixinGreen"
+            android:checked="true"
+            android:focusable="auto"
+            android:text="单机模式"
+            android:textSize="18sp" />
 
-            <TextView
-                android:id="@+id/textView5"
-                android:layout_width="93dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="运行模式：" />
+        <TextView
+            android:id="@+id/labelSingle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="        说明：仅在本手机上供自己使用。" />
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+        <RadioButton
+            android:id="@+id/radioButton_net"
+            style="@style/Widget.AppCompat.CompoundButton.RadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:buttonTint="@color/weixinGreen"
+            android:text="网络模式"
+            android:textSize="18sp" />
 
-                <RadioButton
-                    android:id="@+id/radioButton5"
+        <TextView
+            android:id="@+id/lableNet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="        说明：可供家庭多人使用，会互相同步数据。\n        目前只支持Mysql 5.7。以下信息仅保存在手机的sqlite本地数据库，卸载APP后即清除数据库，不会保存在网络上。" />
+
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/label_ip"
+                    android:layout_width="70dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:text="域名/IP" />
+
+                <EditText
+                    android:id="@+id/text_ip"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:hint="无需填写JDBC"
+                    android:inputType="textMultiLine"
+                    android:textSize="14sp" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/label_port"
+                    android:layout_width="70dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:text="端口" />
+
+                <EditText
+                    android:id="@+id/txt_port"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="3306"
+                    android:textSize="14sp" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/label_user"
+                    android:layout_width="70dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:text="账号" />
+
+                <EditText
+                    android:id="@+id/txt_user"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="单机模式" />
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="root"
+                    android:textSize="14sp" />
 
-                <RadioButton
-                    android:id="@+id/radioButton4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="网络模式" />
-            </LinearLayout>
+            </TableRow>
 
-        </LinearLayout>
-    </LinearLayout>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/label_password"
+                    android:layout_width="70dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:text="密码" />
+
+                <EditText
+                    android:id="@+id/txt_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="textPassword"
+                    android:text="Raiky_2002"
+                    android:textSize="14sp" />
+            </TableRow>
+        </TableLayout>
+
+    </RadioGroup>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"/>
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="60dp"
+            android:layout_marginRight="20dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_style"
+            android:text="测试网络"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="60dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_style"
+            android:text="保存设置"
+            android:textColor="@color/white" />
+    </LinearLayout>
 
 </LinearLayout>

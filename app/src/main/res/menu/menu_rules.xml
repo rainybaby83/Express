@@ -3,9 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menu_new_rules"
+        android:id="@+id/menu_add_rules"
         android:checkable="false"
         android:checked="false"
         android:icon="@drawable/icon_add"
+        android:title="添加新规则"
         app:showAsAction="always" />
 </menu>
